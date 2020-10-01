@@ -100,6 +100,7 @@
     <Compile Include="MyExportContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ExportedGeometry.cs" />
+    <Compile Include="TestColloda.cs" />
     <Compile Include="TextureFinder.cs" />
   </ItemGroup>
   <ItemGroup>
