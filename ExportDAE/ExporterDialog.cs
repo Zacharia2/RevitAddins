@@ -74,7 +74,7 @@ namespace ExportDAE
 		private void button1_Click(object sender, EventArgs e)
 		{
 			this.SaveFileDialog.Filter = "COLLADA file|*.dae";
-			this.SaveFileDialog.Title = "保存 COLLADA（.dae）文件到";
+			this.SaveFileDialog.Title = "保存 COLLADA（.dae）";
 			if (this.SaveFileDialog.ShowDialog() == DialogResult.Cancel)
 			{
 				base.DialogResult = DialogResult.None;
@@ -158,9 +158,10 @@ namespace ExportDAE
             // button1
             // 
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
+            this.button1.Font = new System.Drawing.Font("新宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.button1.Location = new System.Drawing.Point(21, 480);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(98, 25);
+            this.button1.Size = new System.Drawing.Size(100, 30);
             this.button1.TabIndex = 3;
             this.button1.Text = "导出";
             this.button1.UseVisualStyleBackColor = true;
@@ -169,9 +170,10 @@ namespace ExportDAE
             // button2
             // 
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button2.Location = new System.Drawing.Point(163, 480);
+            this.button2.Font = new System.Drawing.Font("新宋体", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
+            this.button2.Location = new System.Drawing.Point(161, 480);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(98, 25);
+            this.button2.Size = new System.Drawing.Size(100, 30);
             this.button2.TabIndex = 4;
             this.button2.Text = "取消";
             this.button2.UseVisualStyleBackColor = true;
