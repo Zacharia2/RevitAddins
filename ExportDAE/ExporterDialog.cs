@@ -70,10 +70,6 @@ namespace ExportDAE
 			registryKey.Close();
 		}
 
-		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-		{
-			Process.Start("http://www.lumion3d.com");
-		}
 
 		private void button1_Click(object sender, EventArgs e)
 		{
@@ -83,7 +79,7 @@ namespace ExportDAE
 			{
 				base.DialogResult = DialogResult.None;
 			}
-			RegistryKey reg = Registry.CurrentUser.OpenSubKey("Software\\Act-3D\\RevitToLumionBridge", true);
+			RegistryKey reg = Registry.CurrentUser.OpenSubKey("Software\\mRevitAddins\\ExportDAE", true);
 			reg.SetValue("InsertionPoint", this.InsertionPoint.SelectedIndex);
 			reg.SetValue("SkipSmallerThan", this.SkipSmallerThan.Value);
 			reg.SetValue("SkipInteriorDetails", this.SkipInteriorDetails.Checked);
@@ -164,7 +160,7 @@ namespace ExportDAE
             this.button1.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.button1.Location = new System.Drawing.Point(21, 480);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(98, 23);
+            this.button1.Size = new System.Drawing.Size(98, 25);
             this.button1.TabIndex = 3;
             this.button1.Text = "导出";
             this.button1.UseVisualStyleBackColor = true;
@@ -175,7 +171,7 @@ namespace ExportDAE
             this.button2.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.button2.Location = new System.Drawing.Point(163, 480);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(98, 23);
+            this.button2.Size = new System.Drawing.Size(98, 25);
             this.button2.TabIndex = 4;
             this.button2.Text = "取消";
             this.button2.UseVisualStyleBackColor = true;
@@ -194,8 +190,8 @@ namespace ExportDAE
             this.InsertionPoint.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.InsertionPoint.FormattingEnabled = true;
             this.InsertionPoint.Items.AddRange(new object[] {
-            "Base Point (project north)",
-            "Survey Point (true north)"});
+            "基点 (project north)",
+            "测量点 (true north)"});
             this.InsertionPoint.Location = new System.Drawing.Point(120, 189);
             this.InsertionPoint.Name = "InsertionPoint";
             this.InsertionPoint.Size = new System.Drawing.Size(145, 23);
@@ -232,7 +228,7 @@ namespace ExportDAE
             this.SkipInteriorDetails.Size = new System.Drawing.Size(119, 19);
             this.SkipInteriorDetails.TabIndex = 10;
             this.SkipInteriorDetails.Text = "忽略内部细节";
-            this.toolTip3.SetToolTip(this.SkipInteriorDetails, "Skip all interior elements.");
+            this.toolTip3.SetToolTip(this.SkipInteriorDetails, "跳过所有内部元素。");
             this.SkipInteriorDetails.UseVisualStyleBackColor = true;
             // 
             // CollectTextures
@@ -243,7 +239,7 @@ namespace ExportDAE
             this.CollectTextures.Size = new System.Drawing.Size(89, 19);
             this.CollectTextures.TabIndex = 11;
             this.CollectTextures.Text = "包含纹理";
-            this.toolTip1.SetToolTip(this.CollectTextures, "Copy all textures to subfolder and change texture paths to relative.");
+            this.toolTip1.SetToolTip(this.CollectTextures, "将所有纹理复制到textures子文件夹");
             this.CollectTextures.UseVisualStyleBackColor = true;
             // 
             // UnicodeSupport
@@ -254,7 +250,7 @@ namespace ExportDAE
             this.UnicodeSupport.Size = new System.Drawing.Size(123, 19);
             this.UnicodeSupport.TabIndex = 12;
             this.UnicodeSupport.Text = "Unicode 支持";
-            this.toolTip2.SetToolTip(this.UnicodeSupport, "Unicode support");
+            this.toolTip2.SetToolTip(this.UnicodeSupport, "Unicode 字符编码支持。");
             this.UnicodeSupport.UseVisualStyleBackColor = true;
             // 
             // levelOfDetail
@@ -311,7 +307,7 @@ namespace ExportDAE
             this.GeometryOptimization.Size = new System.Drawing.Size(89, 19);
             this.GeometryOptimization.TabIndex = 18;
             this.GeometryOptimization.Text = "几何优化";
-            this.toolTip4.SetToolTip(this.GeometryOptimization, "Try to optimize geometry.");
+            this.toolTip4.SetToolTip(this.GeometryOptimization, "尝试优化几何体。");
             this.GeometryOptimization.UseVisualStyleBackColor = true;
             // 
             // pictureBox1
@@ -348,6 +344,7 @@ namespace ExportDAE
             this.Controls.Add(this.label3);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "ExporterDialog";
+            this.Text = "写DAE模型";
             ((System.ComponentModel.ISupportInitialize)(this.SkipSmallerThan)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.levelOfDetail)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
