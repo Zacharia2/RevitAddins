@@ -53,7 +53,7 @@ namespace ExportDAE
 			}
 			else
 			{
-				MessageBox.Show("You must be in 3D view to export.");
+				MessageBox.Show("请在三维视图中导出模型。");
 			}
 			return 0;
 		}

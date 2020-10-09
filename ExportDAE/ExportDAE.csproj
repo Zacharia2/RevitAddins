@@ -103,11 +103,6 @@
     <Compile Include="MyExportContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ExportedGeometry.cs" />
-    <Compile Include="Properties\Resource1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resource1.resx</DependentUpon>
-    </Compile>
     <Compile Include="TestColloda.cs" />
     <Compile Include="TextureFinder.cs" />
   </ItemGroup>
@@ -115,13 +110,11 @@
     <EmbeddedResource Include="ExporterDialog.resx">
       <DependentUpon>ExporterDialog.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resource1.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\blender_high.png" />
+    <EmbeddedResource Include="Resources\blender_16.png" />
+    <EmbeddedResource Include="Resources\blender_32.png" />
+    <EmbeddedResource Include="Resources\blender_64.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

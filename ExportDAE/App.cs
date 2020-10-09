@@ -28,30 +28,11 @@ namespace ExportDAE
 		{
 			RibbonPanel panel = a.CreateRibbonPanel("RevitAddins");
 			this.AddPushButton(panel);
+
 			return Result.Succeeded;
 		}
 
 
-		private static BitmapImage BitmapToBitmapImage(Bitmap bitmap)
-		{
-			using (MemoryStream stream = new MemoryStream())
-			{
-				bitmap.Save(stream, ImageFormat.Png); // 坑点：格式选Bmp时，不带透明度
-
-				stream.Position = 0;
-				BitmapImage result = new BitmapImage();
-				result.BeginInit();
-				// According to MSDN, "The default OnDemand cache option retains access to the stream until the image is needed."
-				// Force the bitmap to load right now so we can dispose the stream.
-				result.CacheOption = BitmapCacheOption.OnLoad;
-				result.StreamSource = stream;
-				result.EndInit();
-				result.Freeze();
-				return result;
-			}
-		}
-
-			
 		private void AddPushButton(RibbonPanel panel)
 		{
 			/*实例化对象PushButtonData，并通过构造函数新建一个按钮数据。该构造函数有四个参数：
@@ -66,11 +47,29 @@ namespace ExportDAE
 
 			//设置按钮图标
 
-			Bitmap bitmap = ExportDAE.Properties.Resource1.blender_high;
-			pushButton.LargeImage = BitmapToBitmapImage(bitmap); 
+			pushButton.Image = GetEmbeddedImage("ExportDAE.Resources.blender_16.png");
+			pushButton.LargeImage = GetEmbeddedImage("ExportDAE.Resources.blender_32.png");
+			
 		}
 
-		
+
+		private static BitmapSource GetEmbeddedImage(string name)
+		{
+			BitmapSource result;
+			try
+			{
+				Assembly executingAssembly = Assembly.GetExecutingAssembly();
+				Stream manifestResourceStream = executingAssembly.GetManifestResourceStream(name);
+				result = BitmapFrame.Create(manifestResourceStream);
+			}
+			catch
+			{
+				result = null;
+			}
+			return result;
+		}
+
+
 		public Result OnShutdown(UIControlledApplication a)
 		{
 			return Result.Succeeded;
