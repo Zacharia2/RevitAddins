@@ -6,6 +6,7 @@ using Collada141;
 
 namespace HelloRevit
 {
+    //这是一个测试程序
     [Transaction(TransactionMode.Manual)]
     public class TestColloda : IExternalCommand
     {

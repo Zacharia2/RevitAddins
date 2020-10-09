@@ -83,15 +83,15 @@ namespace ExportDAE
 			{
 				base.DialogResult = DialogResult.None;
 			}
-			RegistryKey expr_45 = Registry.CurrentUser.OpenSubKey("Software\\Act-3D\\RevitToLumionBridge", true);
-			expr_45.SetValue("InsertionPoint", this.InsertionPoint.SelectedIndex);
-			expr_45.SetValue("SkipSmallerThan", this.SkipSmallerThan.Value);
-			expr_45.SetValue("SkipInteriorDetails", this.SkipInteriorDetails.Checked);
-			expr_45.SetValue("CollectTextures", this.CollectTextures.Checked);
-			expr_45.SetValue("UnicodeSupport", this.UnicodeSupport.Checked);
-			expr_45.SetValue("GeometryOptimization", this.GeometryOptimization.Checked);
-			expr_45.SetValue("LevelOfDetail", this.levelOfDetail.Value);
-			expr_45.Close();
+			RegistryKey reg = Registry.CurrentUser.OpenSubKey("Software\\Act-3D\\RevitToLumionBridge", true);
+			reg.SetValue("InsertionPoint", this.InsertionPoint.SelectedIndex);
+			reg.SetValue("SkipSmallerThan", this.SkipSmallerThan.Value);
+			reg.SetValue("SkipInteriorDetails", this.SkipInteriorDetails.Checked);
+			reg.SetValue("CollectTextures", this.CollectTextures.Checked);
+			reg.SetValue("UnicodeSupport", this.UnicodeSupport.Checked);
+			reg.SetValue("GeometryOptimization", this.GeometryOptimization.Checked);
+			reg.SetValue("LevelOfDetail", this.levelOfDetail.Value);
+			reg.Close();
 		}
 
 		private void levelOfDetail_ValueChanged(object sender, EventArgs e)
@@ -213,7 +213,7 @@ namespace ExportDAE
             this.SkipSmallerThan.Name = "SkipSmallerThan";
             this.SkipSmallerThan.Size = new System.Drawing.Size(145, 25);
             this.SkipSmallerThan.TabIndex = 8;
-            this.SkipSmallerThan.Visible = false;
+            this.SkipSmallerThan.Visible = true;
             // 
             // label2
             // 
@@ -224,7 +224,7 @@ namespace ExportDAE
             this.label2.Size = new System.Drawing.Size(91, 15);
             this.label2.TabIndex = 9;
             this.label2.Text = "丢弃小于[m]";
-            this.label2.Visible = false;
+            this.label2.Visible = true;
             // 
             // SkipInteriorDetails
             // 
