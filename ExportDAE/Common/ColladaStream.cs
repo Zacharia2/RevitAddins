@@ -17,23 +17,23 @@ namespace ExportDAE
         private sealed class common
         {
             public static readonly common T = new common();
-            public static Func<ExportedGeometry, int> T_PointCount;
-            public static Func<ExportedGeometry, int> T_NormalsCount;
+            public static Func<ModelGeometry, int> T_PointCount;
+            public static Func<ModelGeometry, int> T_NormalsCount;
 
-            internal int GetPointCount(ExportedGeometry item)
+            internal int GetPointCount(ModelGeometry item)
             {
                 return item.Points.Count;
             }
 
-            internal int GetNormalsCount(ExportedGeometry item)
+            internal int GetNormalsCount(ModelGeometry item)
             {
                 return item.Normals.Count;
             }
         }
-        private Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>> Geometries = new Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>>();
-        private Dictionary<Tuple<Document, ElementId>, ExportedMaterial> ExportedMaterial = new Dictionary<Tuple<Document, ElementId>, ExportedMaterial>();
+        private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> Geometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
+        private Dictionary<Tuple<Document, ElementId>, ModelMaterial> ExportedMaterial = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
         private COLLADA mode = new COLLADA();
-        public ColladaStream(Dictionary<Tuple<Document, ElementId>, ExportedMaterial> documentAndMaterialIdToExportedMaterial, Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>> documentAndMaterialIdToGeometries)
+        public ColladaStream(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial, Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries)
         {
             //保存模型及材质
             Geometries = documentAndMaterialIdToGeometries;
@@ -103,19 +103,19 @@ namespace ExportDAE
             sourceTechnique_common position_technique_common = new sourceTechnique_common();
             sourceTechnique_common normal_technique_common = new sourceTechnique_common();
             sourceTechnique_common uv_technique_common = new sourceTechnique_common();
-            foreach (KeyValuePair<Tuple<Document, ElementId>, IList<ExportedGeometry>> current in Geometries)
+            foreach (KeyValuePair<Tuple<Document, ElementId>, IList<ModelGeometry>> current in Geometries)
             {
                 Tuple<Document, ElementId> key = current.Key;
                 if(current.Value != null && current.Value.Count > 0)
                 {
-                    ExportedMaterial exprMaterial = ExportedMaterial[key];
+                    ModelMaterial exprMaterial = ExportedMaterial[key];
                     library_geom.geometry[0].id = "geom-" + key.GetHashCode();
                     library_geom.geometry[0].name = exprMaterial.Name;
 
-                    Func<ExportedGeometry, int> getCount;
+                    Func<ModelGeometry, int> getCount;
                     if((getCount = common.T_PointCount) == null)
                     {
-                        getCount = common.T_PointCount = new Func<ExportedGeometry, int>(common.T.GetPointCount);
+                        getCount = common.T_PointCount = new Func<ModelGeometry, int>(common.T.GetPointCount);
                     }
                     int num = current.Value.Sum(getCount);
                     
@@ -124,11 +124,11 @@ namespace ExportDAE
                     position_float_array.id = "geom-" +key.GetHashCode()+"-positions-array";
                     position_float_array.count = (ulong)(num * 3);
 
-                    using(IEnumerator<ExportedGeometry> enumerator = current.Value.GetEnumerator())
+                    using(IEnumerator<ModelGeometry> enumerator = current.Value.GetEnumerator())
                     {
                         while (enumerator.MoveNext())
                         {
-                            ExportedGeometry geometry = enumerator.Current;
+                            ModelGeometry geometry = enumerator.Current;
                             if (!geometry.Transform.IsIdentity)
                             {
                                 Parallel.For(0, geometry.Points.Count, delegate (int iPoint)
@@ -170,10 +170,10 @@ namespace ExportDAE
 
 
             //法线
-            Func<ExportedGeometry, int> NormalsCount;
+            Func<ModelGeometry, int> NormalsCount;
             if((NormalsCount = common.T_NormalsCount) == null)
             {
-                NormalsCount = common.T_NormalsCount = new Func<ExportedGeometry, int>(common.T.GetNormalsCount);
+                NormalsCount = common.T_NormalsCount = new Func<ModelGeometry, int>(common.T.GetNormalsCount);
             }
             
 

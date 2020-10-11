@@ -12,16 +12,16 @@ using System.Text;
 namespace ExportDAE
 {
 
-    internal class MyExportContext : IExportContext
+    internal class mExportContext : IExportContext
     {
 		[CompilerGenerated]
 		[Serializable]
 		private sealed class Inner
 		{
 			public static readonly Inner tools = new Inner();
-			public static Func<ExportedMaterial, bool> mIsValidTexturePath;
-			public static Func<ExportedMaterial, string> TexturePath1;
-			public static Func<ExportedMaterial, string> TexturePath2;
+			public static Func<ModelMaterial, bool> mIsValidTexturePath;
+			public static Func<ModelMaterial, string> TexturePath1;
+			public static Func<ModelMaterial, string> TexturePath2;
 			public static Func<char, bool> tools__25_0;
 			public static Func<char, bool> IsChar2;
 
@@ -29,7 +29,7 @@ namespace ExportDAE
 			/// <summary>
 			/// IsValidTexturePath 判断贴图路径是否为空。
 			/// </summary>
-			internal bool IsValidTexturePath(ExportedMaterial i) 	
+			internal bool IsValidTexturePath(ModelMaterial i) 	
 			{
 				return i.TexturePath != string.Empty;
 
@@ -38,7 +38,7 @@ namespace ExportDAE
 			/// <summary>
 			/// GetTexturePath2 获取贴图路径
 			/// </summary>
-			internal string GetTexturePath1(ExportedMaterial o) //GetTexturePath1
+			internal string GetTexturePath1(ModelMaterial o) //GetTexturePath1
 			{
 				return o.TexturePath;
 			}
@@ -46,7 +46,7 @@ namespace ExportDAE
 			/// <summary>
 			/// GetTexturePath2 获取贴图路径
 			/// </summary>
-			internal string GetTexturePath2(ExportedMaterial o)  
+			internal string GetTexturePath2(ModelMaterial o)  
 			{
 				return o.TexturePath;
 			}
@@ -82,7 +82,7 @@ namespace ExportDAE
 		//定义revit文档类型的堆栈。
         private Stack<Document> documentStack = new Stack<Document>();
         private Tuple<Document, ElementId> currentDocumentAndMaterialId;
-        private Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>> documentAndMaterialIdToGeometries = new Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>>();
+        private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
         private TextureFinder textureFinder;
         private int currentDecalMaterialId = -2147483648;
         private Dictionary<ElementId, Element> decalMaterialIdToDecal = new Dictionary<ElementId, Element>();
@@ -93,7 +93,7 @@ namespace ExportDAE
 
 
         //构造方法
-        public MyExportContext(Document document, ExportingOptions exportingOptions)
+        public mExportContext(Document document, ExportingOptions exportingOptions)
         {
 			//初始化类，接受revit文档，导出选项，创建纹理查找工具，接受指定资产类型的revit数组并转换为集合。
 			//创建解析首选项工具，并设置计算引用几何对象及设置提取几何图形精度为完整。
@@ -151,7 +151,7 @@ namespace ExportDAE
 		{
 
 			//导出材质的文档和材质ID
-			Dictionary<Tuple<Document, ElementId>, ExportedMaterial> documentAndMaterialIdToExportedMaterial = ExportMaterials();
+			Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial = ExportMaterials();
 
 			//判断是否已经完成CollectTextures（纹理收集）
 			if (exportingOptions.CollectTextures)
@@ -169,17 +169,17 @@ namespace ExportDAE
 			ChangeCurrentMaterial(currentDocumentAndMaterialId);
 		}
 
-		private void MakeTexturePathsRelative(Dictionary<Tuple<Document, ElementId>, ExportedMaterial> documentAndMaterialIdToExportedMaterial)
+		private void MakeTexturePathsRelative(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial)
 		{
-			IEnumerable<ExportedMaterial> expr_MaterialSet3 = documentAndMaterialIdToExportedMaterial.Values;
-			Func<ExportedMaterial, bool> IsValidTexturePath;
+			IEnumerable<ModelMaterial> expr_MaterialSet3 = documentAndMaterialIdToExportedMaterial.Values;
+			Func<ModelMaterial, bool> IsValidTexturePath;
 			if ((IsValidTexturePath = Inner.mIsValidTexturePath) == null)
 			{
-				IsValidTexturePath = (Inner.mIsValidTexturePath = new Func<ExportedMaterial, bool>(Inner.tools.IsValidTexturePath));
+				IsValidTexturePath = (Inner.mIsValidTexturePath = new Func<ModelMaterial, bool>(Inner.tools.IsValidTexturePath));
 			}
 
 
-			foreach (ExportedMaterial current in expr_MaterialSet3.Where(IsValidTexturePath))
+			foreach (ModelMaterial current in expr_MaterialSet3.Where(IsValidTexturePath))
 			{
 				current.TexturePath = "textures\\" + this.CleanPath(Path.GetFileName(current.TexturePath));
 			}
@@ -191,18 +191,18 @@ namespace ExportDAE
 		/// 并定义导出材质的文件夹并将贴图放进这个文件夹。
 		/// </summary>
 		/// <param name="documentAndMaterialIdToExportedMaterial">欲导出材质的revit文档及材质ID</param>
-		private void CollectTextures(Dictionary<Tuple<Document, ElementId>, ExportedMaterial> documentAndMaterialIdToExportedMaterial)
+		private void CollectTextures(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial)
 		{
 			//将导出材质的文档和材质ID赋值给迭代器。
-			IEnumerable<ExportedMaterial> expr_MaterialSet = documentAndMaterialIdToExportedMaterial.Values;
+			IEnumerable<ModelMaterial> expr_MaterialSet = documentAndMaterialIdToExportedMaterial.Values;
 			//定义一个委托 in 为 ExportedMaterial, out为 string。
-			Func<ExportedMaterial, string> TexturePath1;
+			Func<ModelMaterial, string> TexturePath1;
 			//这里是委托函数，若内部类定义的Func为空，就new 一个func并将内部类中getGetTexturePath1方法作为参数传递给func形成委托函数调用，之后赋值给
 			//内部类中的变量和此方法内部变量。
 			if ((TexturePath1 = Inner.TexturePath1) == null)
 			{
 				//把委托作为参数
-				TexturePath1 = Inner.TexturePath1 = new Func<ExportedMaterial, string>(Inner.tools.GetTexturePath1);
+				TexturePath1 = Inner.TexturePath1 = new Func<ModelMaterial, string>(Inner.tools.GetTexturePath1);
 			}
 			//检查元素是否为空。
 			//使用Ienumerable.select() 吧定义好从导出材质获取贴图路径的委托方法作为参数传递。并排序，获取元素个数，判读是否为空。若为空，结束本函数。
@@ -226,11 +226,11 @@ namespace ExportDAE
 
 
 			//引用委托函数。
-			IEnumerable<ExportedMaterial> expr_MaterialSet2 = documentAndMaterialIdToExportedMaterial.Values;
-			Func<ExportedMaterial, string> TexturePath2;
+			IEnumerable<ModelMaterial> expr_MaterialSet2 = documentAndMaterialIdToExportedMaterial.Values;
+			Func<ModelMaterial, string> TexturePath2;
 			if ((TexturePath2 = Inner.TexturePath2) == null)
 			{
-				TexturePath2 = (Inner.TexturePath2 = new Func<ExportedMaterial, string>(Inner.tools.GetTexturePath2));
+				TexturePath2 = (Inner.TexturePath2 = new Func<ModelMaterial, string>(Inner.tools.GetTexturePath2));
 			}
 			//迭代非重复贴图路径集合。若不为空就把贴图文件夹所在绝对路径加上格式化后的文件名及后缀。
 			foreach (string current in expr_MaterialSet2.Select(TexturePath2).Distinct())
@@ -285,9 +285,9 @@ namespace ExportDAE
 			return Transform.CreateTranslation(new XYZ(eastWest, northSouth, elevation)) * transform;
 		}
 
-		private Dictionary<Tuple<Document, ElementId>, ExportedMaterial> ExportMaterials()
+		private Dictionary<Tuple<Document, ElementId>, ModelMaterial> ExportMaterials()
 		{
-			Dictionary<Tuple<Document, ElementId>, ExportedMaterial> dictionary = new Dictionary<Tuple<Document, ElementId>, ExportedMaterial>();
+			Dictionary<Tuple<Document, ElementId>, ModelMaterial> dictionary = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
 			foreach (Tuple<Document, ElementId> current in this.documentAndMaterialIdToGeometries.Keys)
 			{
 				ElementId item = current.Item2;
@@ -308,13 +308,13 @@ namespace ExportDAE
 			string text;
 			if (this.exportingOptions.UnicodeSupport)
 			{
-				byte[] bytes = MyExportContext.Utf16Encoder.GetBytes(name);
-				text = MyExportContext.Utf16Encoder.GetString(bytes);
+				byte[] bytes = mExportContext.Utf16Encoder.GetBytes(name);
+				text = mExportContext.Utf16Encoder.GetString(bytes);
 			}
 			else
 			{
-				byte[] bytes2 = MyExportContext.usAsciiEncoder.GetBytes(name);
-				text = MyExportContext.usAsciiEncoder.GetString(bytes2);
+				byte[] bytes2 = mExportContext.usAsciiEncoder.GetBytes(name);
+				text = mExportContext.usAsciiEncoder.GetString(bytes2);
 			}
 			IEnumerable<char> arg_65_0 = text;
 			Func<char, bool> arg_65_1;
@@ -366,11 +366,11 @@ namespace ExportDAE
 
 
 
-		private ExportedMaterial ExportMaterial(Tuple<Document, ElementId> documentAndMaterialId)
+		private ModelMaterial ExportMaterial(Tuple<Document, ElementId> documentAndMaterialId)
 		{
 			Document item = documentAndMaterialId.Item1;
 			ElementId item2 = documentAndMaterialId.Item2;
-			ExportedMaterial exportedMaterial = new ExportedMaterial();
+			ModelMaterial exportedMaterial = new ModelMaterial();
 			Material material = item.GetElement(item2) as Material;
 			if (material != null && material.IsValidObject)
 			{
@@ -408,9 +408,9 @@ namespace ExportDAE
 			return exportedMaterial;
 		}
 
-		private ExportedMaterial ExportDecalMaterial(ElementId decalMaterialId)
+		private ModelMaterial ExportDecalMaterial(ElementId decalMaterialId)
 		{
-			return new ExportedMaterial
+			return new ModelMaterial
 			{
 				Name = this.CleanName(this.decalMaterialIdToDecal[decalMaterialId].Name),
 				TexturePath = this.textureFinder.FindDiffuseTextureDecal(this.decalMaterialIdToDecal[decalMaterialId])
@@ -489,7 +489,7 @@ namespace ExportDAE
 				for (int i = 0; i < shellComponentCount; i++)
 				{
 					TriangulatedShellComponent shellComponent = triangulatedSolidOrShell.GetShellComponent(i);
-					ExportedGeometry exportedGeometry = new ExportedGeometry();
+					ModelGeometry exportedGeometry = new ModelGeometry();
 					exportedGeometry.Transform = this.transformationStack.Peek();
 					exportedGeometry.Points = new List<XYZ>(shellComponent.VertexCount);
 					for (int num = 0; num != shellComponent.VertexCount; num++)
@@ -526,7 +526,7 @@ namespace ExportDAE
 					Mesh mesh = face.Triangulate((double)this.exportingOptions.LevelOfDetail / 15.0);
 					if (!(mesh == null) && !mesh.Visibility.Equals(3))
 					{
-						ExportedGeometry exportedGeometry = new ExportedGeometry();
+						ModelGeometry exportedGeometry = new ModelGeometry();
 						exportedGeometry.Transform = this.transformationStack.Peek();
 						exportedGeometry.Points = new List<XYZ>(mesh.Vertices);
 						exportedGeometry.Indices = new List<int>(mesh.NumTriangles * 3);
@@ -550,7 +550,7 @@ namespace ExportDAE
 								exportedGeometry.Indices.Add((int)meshTriangle2.get_Index(2));
 							}
 						}
-						ExportedGeometry expr_166 = exportedGeometry;
+						ModelGeometry expr_166 = exportedGeometry;
 						expr_166.CalculateNormals(expr_166.Transform.IsConformal && exportedGeometry.Transform.HasReflection);
 						exportedGeometry.CalculateUVs(true, false);
 						if (face.IsTwoSided)
@@ -610,7 +610,7 @@ namespace ExportDAE
 
 		private void ExportDecalFlat(Element element)
 		{
-			ExportedGeometry exportedGeometry = new ExportedGeometry();
+			ModelGeometry exportedGeometry = new ModelGeometry();
 			exportedGeometry.Transform = this.transformationStack.Peek();
 			GeometryElement arg_2F_0 = element.get_Geometry(this.geometryOptions);
 			exportedGeometry.Points = new List<XYZ>(4);
@@ -658,7 +658,7 @@ namespace ExportDAE
 
 		private void ExportDecalCurved(Element element)
 		{
-			ExportedGeometry exportedGeometry = new ExportedGeometry();
+			ModelGeometry exportedGeometry = new ModelGeometry();
 			exportedGeometry.Transform = this.transformationStack.Peek();
 			GeometryElement expr_23 = element.get_Geometry(this.geometryOptions);
 			Arc arc = expr_23.ToArray<GeometryObject>()[1] as Arc;
@@ -828,7 +828,7 @@ namespace ExportDAE
 
         public void OnPolymesh(PolymeshTopology polymesh)
         {
-			ExportedGeometry exportedGeometry = new ExportedGeometry();
+			ModelGeometry exportedGeometry = new ModelGeometry();
 			exportedGeometry.Points = polymesh.GetPoints();
 			exportedGeometry.Normals = polymesh.GetNormals();
 			exportedGeometry.Uvs = polymesh.GetUVs();
@@ -868,7 +868,7 @@ namespace ExportDAE
 			this.currentDocumentAndMaterialId = documentAndMaterialId;
 			if (!this.documentAndMaterialIdToGeometries.ContainsKey(this.currentDocumentAndMaterialId))
 			{
-				this.documentAndMaterialIdToGeometries.Add(this.currentDocumentAndMaterialId, new List<ExportedGeometry>(100));
+				this.documentAndMaterialIdToGeometries.Add(this.currentDocumentAndMaterialId, new List<ModelGeometry>(100));
 			}
 		}
 

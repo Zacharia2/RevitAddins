@@ -17,12 +17,12 @@ namespace ExportDAE
 			UIDocument activeUIDocument = application.ActiveUIDocument;
 			if (activeUIDocument == null)
 			{
-				return (Result)1;
+				return Result.Cancelled;
 			}
 			Document document = activeUIDocument.Document;
 			if (document == null)
 			{
-				return (Result)1;//不同返回值具有不同结果，1为取消。
+				return Result.Cancelled;//不同返回值具有不同结果，1为取消。
 			}
 			if (document.ActiveView is View3D)//is 用来判断是否兼容
 			{
@@ -37,14 +37,12 @@ namespace ExportDAE
 					exportingOptions.FilePath = exporterDialog.SaveFileDialog.FileName;//将设置的文件名赋予对象的路径变量中。
 					exportingOptions.SkipSmallerThan = (double)exporterDialog.SkipSmallerThan.Value;//设置跳过小于某一精度的物体。
 					exportingOptions.InsertionPoint = exporterDialog.InsertionPoint.SelectedIndex;//设置插入点
-					exportingOptions.SkipInteriorDetails = exporterDialog.SkipInteriorDetails.Checked;//
-					exportingOptions.CollectTextures = exporterDialog.CollectTextures.Checked;
-					exportingOptions.UnicodeSupport = exporterDialog.UnicodeSupport.Checked;
-					exportingOptions.GeometryOptimization = exporterDialog.GeometryOptimization.Checked;
+					exportingOptions.SkipInteriorDetails = exporterDialog.SkipInteriorDetails.Checked;//设置是否跳过较小的几何体
+					exportingOptions.CollectTextures = exporterDialog.CollectTextures.Checked;//设置是否保护贴图
+					exportingOptions.UnicodeSupport = exporterDialog.UnicodeSupport.Checked;//设置Unicode支持
+					exportingOptions.GeometryOptimization = exporterDialog.GeometryOptimization.Checked;//设置是否优化几何体
 					exportingOptions.MainView3D = (document.ActiveView as View3D);//as 判断类型是否兼容，是强制转换，不是返回null。
-					exportingOptions.LevelOfDetail = exporterDialog.levelOfDetail.Value;
-
-
+					exportingOptions.LevelOfDetail = exporterDialog.levelOfDetail.Value;// 设置导出模型精度等级。
 
 
 					//导出DAE模型,提交函数条件  文档、3D视图、导出选线
@@ -55,13 +53,13 @@ namespace ExportDAE
 			{
 				MessageBox.Show("请在三维视图中导出模型。");
 			}
-			return 0;
+			return Result.Succeeded;
 		}
 
 		internal void ExportView3D(Document document, View3D view3D, ExportingOptions exportingOptions)
 		{
 			//将文档和导出模型设置提交给 导出上下文对象。
-			MyExportContext myExportContext = new MyExportContext(document, exportingOptions);
+			mExportContext myExportContext = new mExportContext(document, exportingOptions);
 			//将文档和导出上下文对象提交给 autodesk默认导出对象。
 			CustomExporter customExporter = new CustomExporter(document, myExportContext);
 			customExporter.IncludeGeometricObjects = false;
@@ -91,7 +89,7 @@ namespace ExportDAE
 			//数值代表变量类型。获取属性值并加入字符串末尾。
 			switch (assetProperty.Type)
 			{
-				case (AssetPropertyType)2:
+				case AssetPropertyType.Boolean:
 					text += (assetProperty as AssetPropertyBoolean).Value.ToString();
 					break;
 				case (AssetPropertyType)4:

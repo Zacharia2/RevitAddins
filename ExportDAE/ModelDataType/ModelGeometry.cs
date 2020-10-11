@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace ExportDAE
 {
-	internal class ExportedGeometry
+	internal class ModelGeometry
 	{
 		/// <summary>
 		/// 坐标系

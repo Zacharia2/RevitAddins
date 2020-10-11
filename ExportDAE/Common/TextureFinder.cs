@@ -152,7 +152,7 @@ namespace ExportDAE
 			registryKey.Close();
 		}
 
-		public void FindDiffuseTexturePathFromAsset(ExportedMaterial exportedMaterial, Asset asset)
+		public void FindDiffuseTexturePathFromAsset(ModelMaterial exportedMaterial, Asset asset)
 		{
 			//从Asset资源中查找漫反射纹理路径
 			//判读asset是否为空

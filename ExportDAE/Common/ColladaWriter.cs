@@ -18,24 +18,24 @@ namespace ExportDAE
 		{
 			public static readonly Inner T = new Inner();
 
-			public static Func<ExportedGeometry, int> T__17_0;
+			public static Func<ModelGeometry, int> T__17_0;
 
-			public static Func<ExportedGeometry, int> T__18_0;
+			public static Func<ModelGeometry, int> T__18_0;
 
-			public static Func<ExportedGeometry, int> T__19_0;
+			public static Func<ModelGeometry, int> T__19_0;
 
-			public static Func<ExportedGeometry, int> T__21_0;
+			public static Func<ModelGeometry, int> T__21_0;
 
-			public static Func<ExportedGeometry, int> T__21_1;
+			public static Func<ModelGeometry, int> T__21_1;
 
-			public static Func<ExportedGeometry, int> T__21_2;
+			public static Func<ModelGeometry, int> T__21_2;
 
-			public static Func<ExportedMaterial, string> T__24_0;
+			public static Func<ModelMaterial, string> T__24_0;
 
 			/// <summary>
 			/// 返回顶点数
 			/// </summary>
-			internal int b__17_0(ExportedGeometry item)
+			internal int b__17_0(ModelGeometry item)
 			{
 				return item.Points.Count;
 			}
@@ -45,7 +45,7 @@ namespace ExportDAE
 			/// </summary>
 			/// <param name="item"></param>
 			/// <returns></returns>
-			internal int b__18_0(ExportedGeometry item)
+			internal int b__18_0(ModelGeometry item)
 			{
 				return item.Normals.Count;
 			}
@@ -56,27 +56,27 @@ namespace ExportDAE
 			/// </summary>
 			/// <param name="item"></param>
 			/// <returns></returns>
-			internal int b__19_0(ExportedGeometry item)
+			internal int b__19_0(ModelGeometry item)
 			{
 				return item.Points.Count;
 			}
 
-			internal int b__21_0(ExportedGeometry item)
+			internal int b__21_0(ModelGeometry item)
 			{
 				return item.Indices.Count;
 			}
 
-			internal int b__21_1(ExportedGeometry item)
+			internal int b__21_1(ModelGeometry item)
 			{
 				return item.Points.Count;
 			}
 
-			internal int b__21_2(ExportedGeometry item)
+			internal int b__21_2(ModelGeometry item)
 			{
 				return item.Normals.Count;
 			}
 
-			internal string b__24_0(ExportedMaterial o)
+			internal string b__24_0(ModelMaterial o)
 			{
 				return o.TexturePath;
 			}
@@ -86,12 +86,12 @@ namespace ExportDAE
             }
         }
 
-		private Dictionary<Tuple<Document, ElementId>, ExportedMaterial> documentAndMaterialIdToExportedMaterial = new Dictionary<Tuple<Document, ElementId>, ExportedMaterial>();
-		private Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>> documentAndMaterialIdToGeometries = new Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>>();
+		private Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
+		private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
 		private StreamWriter streamWriter;
 		private StringBuilder sb = new StringBuilder();
 
-	public ColladaWriter(Dictionary<Tuple<Document, ElementId>, ExportedMaterial> documentAndMaterialIdToExportedMaterial, Dictionary<Tuple<Document, ElementId>, IList<ExportedGeometry>> documentAndMaterialIdToGeometries)
+	public ColladaWriter(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial, Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries)
 	{
 		this.documentAndMaterialIdToExportedMaterial = documentAndMaterialIdToExportedMaterial;
 		this.documentAndMaterialIdToGeometries = documentAndMaterialIdToGeometries;
@@ -158,22 +158,22 @@ namespace ExportDAE
 	{
 		this.WriteXmlLibraryGeometriesBegin();
 			//迭代documentAndMaterialIdToGeometries
-			foreach (KeyValuePair<Tuple<Document, ElementId>, IList<ExportedGeometry>> current in this.documentAndMaterialIdToGeometries)
+			foreach (KeyValuePair<Tuple<Document, ElementId>, IList<ModelGeometry>> current in this.documentAndMaterialIdToGeometries)
 		{
 				//将文档，及元素ID赋值给key
 			Tuple<Document, ElementId> key = current.Key;
 				//迭代current.Value也即是ExportedGeometry
-				foreach (ExportedGeometry current2 in current.Value)
+				foreach (ModelGeometry current2 in current.Value)
 			{
 					//新建类型为ExportedGeometry的列表
-					IList<ExportedGeometry> list = new List<ExportedGeometry>();
+					IList<ModelGeometry> list = new List<ModelGeometry>();
 					//将导出模型加入到列表中。
 				list.Add(current2);
 					//判断列表非空并大于零
 				if (list != null && list.Count > 0)
 				{
 
-					ExportedMaterial exportedMaterial = this.documentAndMaterialIdToExportedMaterial[key];
+					ModelMaterial exportedMaterial = this.documentAndMaterialIdToExportedMaterial[key];
 					this.sb.Clear();
 					this.WriteXmlGeometryBegin(current2.GetHashCode(), exportedMaterial);
 
@@ -199,12 +199,12 @@ namespace ExportDAE
 			
 		this.WriteXmlLibraryGeometriesBegin();
 
-		foreach (KeyValuePair<Tuple<Document, ElementId>, IList<ExportedGeometry>> current in this.documentAndMaterialIdToGeometries)
+		foreach (KeyValuePair<Tuple<Document, ElementId>, IList<ModelGeometry>> current in this.documentAndMaterialIdToGeometries)
 		{
 			Tuple<Document, ElementId> key = current.Key;
 			if (current.Value != null && current.Value.Count > 0)
 			{
-				ExportedMaterial exportedMaterial = this.documentAndMaterialIdToExportedMaterial[key];
+				ModelMaterial exportedMaterial = this.documentAndMaterialIdToExportedMaterial[key];
 				this.sb.Clear();
 				this.WriteXmlGeometryBegin(key.GetHashCode(), exportedMaterial);
 				this.WriteXmlGeometrySourcePositions(key.GetHashCode(), current.Value);
@@ -241,7 +241,7 @@ namespace ExportDAE
 		this.streamWriter.Write("</library_geometries>\n");
 	}
 
-	private void WriteXmlGeometryBegin(int documentAndMaterialIdHash, ExportedMaterial exportedMaterial)
+	private void WriteXmlGeometryBegin(int documentAndMaterialIdHash, ModelMaterial exportedMaterial)
 	{
 		this.sb.AppendFormat("<geometry id=\"geom-{0}\" name=\"{1}\">\n", documentAndMaterialIdHash, this.Utf16ToUtf8(exportedMaterial.Name));
 		this.sb.Append("<mesh>\n");
@@ -253,12 +253,12 @@ namespace ExportDAE
 		this.sb.Append("</geometry>\n");
 	}
 
-	private void WriteXmlGeometrySourcePositions(int documentAndMaterialIdHash, IList<ExportedGeometry> geometries)
+	private void WriteXmlGeometrySourcePositions(int documentAndMaterialIdHash, IList<ModelGeometry> geometries)
 	{
-		Func<ExportedGeometry, int> arg_20_1;
+		Func<ModelGeometry, int> arg_20_1;
 		if ((arg_20_1 = Inner.T__17_0) == null)
 		{
-			arg_20_1 = (Inner.T__17_0 = new Func<ExportedGeometry, int>(Inner.T.b__17_0));
+			arg_20_1 = (Inner.T__17_0 = new Func<ModelGeometry, int>(Inner.T.b__17_0));
 		}
 		//计算顶点数
 		int num = geometries.Sum(arg_20_1);
@@ -271,11 +271,11 @@ namespace ExportDAE
 	场景：
 	当在某个代码段中使用了类的实例，而希望无论因为什么原因，只要离开了这个代码段就自动调用这个类实例的Dispose。
 	要达到这样的目的，用try...catch来捕捉异常也是可以的，但用using也很方便。//*/
-			using (IEnumerator<ExportedGeometry> enumerator = geometries.GetEnumerator())
+			using (IEnumerator<ModelGeometry> enumerator = geometries.GetEnumerator())
 		{
 			while (enumerator.MoveNext())
 			{
-				ExportedGeometry geometry = enumerator.Current;
+				ModelGeometry geometry = enumerator.Current;
 					//恒等变换不会改变它所应用的点或向量。
 				if (!geometry.Transform.IsIdentity)
 				{
@@ -349,12 +349,12 @@ namespace ExportDAE
 		this.sb.Append("</source>\n");
 	}
 
-	private void WriteXmlGeometrySourceNormals(int documentAndMaterialIdHash, IList<ExportedGeometry> geometries)
+	private void WriteXmlGeometrySourceNormals(int documentAndMaterialIdHash, IList<ModelGeometry> geometries)
 	{
-		Func<ExportedGeometry, int> arg_20_1;
+		Func<ModelGeometry, int> arg_20_1;
 		if ((arg_20_1 = Inner.T__18_0) == null)
 		{
-			arg_20_1 = (Inner.T__18_0 = new Func<ExportedGeometry, int>(Inner.T.b__18_0));
+			arg_20_1 = (Inner.T__18_0 = new Func<ModelGeometry, int>(Inner.T.b__18_0));
 		}
 		//计算法线数量
 		int num = geometries.Sum(arg_20_1);
@@ -362,11 +362,11 @@ namespace ExportDAE
 		this.sb.AppendFormat("<source id=\"geom-{0}-normals\">\n", documentAndMaterialIdHash);
 			//float_array节点属性
 		this.sb.AppendFormat("<float_array id=\"geom-{0}-normals-array\" count=\"{1}\">\n", documentAndMaterialIdHash, num * 3);
-		using (IEnumerator<ExportedGeometry> enumerator = geometries.GetEnumerator())
+		using (IEnumerator<ModelGeometry> enumerator = geometries.GetEnumerator())
 		{
 			while (enumerator.MoveNext())
 			{
-				ExportedGeometry geometry = enumerator.Current;
+				ModelGeometry geometry = enumerator.Current;
 				if (!geometry.Transform.IsIdentity)
 				{
 					Parallel.For(0, geometry.Normals.Count, delegate (int iNormal)
@@ -397,19 +397,19 @@ namespace ExportDAE
 		this.sb.Append("</source>\n");
 	}
 
-	private void WriteXmlGeometrySourceMap(int documentAndMaterialIdHash, ExportedMaterial exportedMaterial, IList<ExportedGeometry> geometries)
+	private void WriteXmlGeometrySourceMap(int documentAndMaterialIdHash, ModelMaterial exportedMaterial, IList<ModelGeometry> geometries)
 	{
-		Func<ExportedGeometry, int> arg_20_1;
+		Func<ModelGeometry, int> arg_20_1;
 		if ((arg_20_1 = Inner.T__19_0) == null)
 		{
-			arg_20_1 = (Inner.T__19_0 = new Func<ExportedGeometry, int>(Inner.T.b__19_0));
+			arg_20_1 = (Inner.T__19_0 = new Func<ModelGeometry, int>(Inner.T.b__19_0));
 		}
 		//计算points（顶点）数
 		int num = geometries.Sum(arg_20_1);
 		this.sb.AppendFormat("<source id=\"geom-{0}-map\">\n", documentAndMaterialIdHash);
 		this.sb.AppendFormat("<float_array id=\"geom-{0}-map-array\" count=\"{1}\">\n", documentAndMaterialIdHash, num * 2);
 			//迭代geometries
-			foreach (ExportedGeometry current in geometries)
+			foreach (ModelGeometry current in geometries)
 		{
 			for (int i = 0; i < current.Uvs.Count; i++)
 			{
@@ -454,25 +454,25 @@ namespace ExportDAE
 		this.sb.Append("</vertices>\n");
 	}
 
-	private void WriteXmlGeometryTrianglesWithMap(int documentAndMaterialIdHash, IList<ExportedGeometry> geometries)
+	private void WriteXmlGeometryTrianglesWithMap(int documentAndMaterialIdHash, IList<ModelGeometry> geometries)
 	{
-		Func<ExportedGeometry, int> arg_20_1;
+		Func<ModelGeometry, int> arg_20_1;
 		if ((arg_20_1 = Inner.T__21_0) == null)
 		{
-			arg_20_1 = (Inner.T__21_0 = new Func<ExportedGeometry, int>(Inner.T.b__21_0));
+			arg_20_1 = (Inner.T__21_0 = new Func<ModelGeometry, int>(Inner.T.b__21_0));
 		}
 		int num = geometries.Sum(arg_20_1) / 3;
 		this.sb.AppendFormat("<triangles count=\"{0}\" material=\"material-{1}\">\n", num, documentAndMaterialIdHash);
-		Func<ExportedGeometry, int> arg_65_1;
+		Func<ModelGeometry, int> arg_65_1;
 		if ((arg_65_1 = Inner.T__21_1) == null)
 		{
-			arg_65_1 = (Inner.T__21_1 = new Func<ExportedGeometry, int>(Inner.T.b__21_1));
+			arg_65_1 = (Inner.T__21_1 = new Func<ModelGeometry, int>(Inner.T.b__21_1));
 		}
 		int arg_91_0 = geometries.Sum(arg_65_1);
-		Func<ExportedGeometry, int> arg_8A_1;
+		Func<ModelGeometry, int> arg_8A_1;
 		if ((arg_8A_1 = Inner.T__21_2) == null)
 		{
-			arg_8A_1 = (Inner.T__21_2 = new Func<ExportedGeometry, int>(Inner.T.b__21_2));
+			arg_8A_1 = (Inner.T__21_2 = new Func<ModelGeometry, int>(Inner.T.b__21_2));
 		}
 		int num2 = geometries.Sum(arg_8A_1);
 		if (arg_91_0 == num2)
@@ -482,11 +482,11 @@ namespace ExportDAE
 			this.sb.AppendFormat("<input offset=\"0\" semantic=\"NORMAL\" source=\"#geom-{0}-normals\"/>\n", documentAndMaterialIdHash);
 			this.sb.Append("<p>\n");
 			int num3 = 0;
-			using (IEnumerator<ExportedGeometry> enumerator = geometries.GetEnumerator())
+			using (IEnumerator<ModelGeometry> enumerator = geometries.GetEnumerator())
 			{
 				while (enumerator.MoveNext())
 				{
-					ExportedGeometry current = enumerator.Current;
+					ModelGeometry current = enumerator.Current;
 					for (int i = 0; i < current.Indices.Count; i++)
 					{
 						this.sb.AppendFormat("{0} ", current.Indices[i] + num3);
@@ -502,7 +502,7 @@ namespace ExportDAE
 		this.sb.Append("<p>\n");
 		int num4 = 0;
 		int num5 = 0;
-		foreach (ExportedGeometry current2 in geometries)
+		foreach (ModelGeometry current2 in geometries)
 		{
 			switch (current2.DistributionOfNormals)
 			{
@@ -531,10 +531,10 @@ namespace ExportDAE
 	private void WriteXmlLibraryMaterials()
 	{
 		this.streamWriter.Write("<library_materials>\n");
-		foreach (KeyValuePair<Tuple<Document, ElementId>, ExportedMaterial> current in this.documentAndMaterialIdToExportedMaterial)
+		foreach (KeyValuePair<Tuple<Document, ElementId>, ModelMaterial> current in this.documentAndMaterialIdToExportedMaterial)
 		{
 			int hashCode = current.Key.GetHashCode();
-			ExportedMaterial value = current.Value;
+			ModelMaterial value = current.Value;
 			string text = this.Utf16ToUtf8(value.Name);
 			this.streamWriter.Write(string.Concat(new string[]
 			{
@@ -553,10 +553,10 @@ namespace ExportDAE
 	private void WriteXmlLibraryEffects()
 	{
 		this.streamWriter.Write("<library_effects>\n");
-		foreach (KeyValuePair<Tuple<Document, ElementId>, ExportedMaterial> current in this.documentAndMaterialIdToExportedMaterial)
+		foreach (KeyValuePair<Tuple<Document, ElementId>, ModelMaterial> current in this.documentAndMaterialIdToExportedMaterial)
 		{
 			int hashCode = current.Key.GetHashCode();
-			ExportedMaterial value = current.Value;
+			ModelMaterial value = current.Value;
 			this.streamWriter.Write(string.Concat(new string[]
 			{
 					"<effect id=\"effect-",
@@ -619,11 +619,11 @@ namespace ExportDAE
 	private void WriteXmlLibraryImages()
 	{
 		this.streamWriter.Write("<library_images>\n");
-		IEnumerable<ExportedMaterial> arg_3A_0 = this.documentAndMaterialIdToExportedMaterial.Values;
-		Func<ExportedMaterial, string> arg_3A_1;
+		IEnumerable<ModelMaterial> arg_3A_0 = this.documentAndMaterialIdToExportedMaterial.Values;
+		Func<ModelMaterial, string> arg_3A_1;
 		if ((arg_3A_1 = Inner.T__24_0) == null)
 		{
-			arg_3A_1 = (Inner.T__24_0 = new Func<ExportedMaterial, string>(Inner.T.b__24_0));
+			arg_3A_1 = (Inner.T__24_0 = new Func<ModelMaterial, string>(Inner.T.b__24_0));
 		}
 		foreach (string current in arg_3A_0.Select(arg_3A_1).Distinct<string>())
 		{

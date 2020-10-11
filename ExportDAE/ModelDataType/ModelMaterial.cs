@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace ExportDAE
 {
-	internal class ExportedMaterial : IEquatable<ExportedMaterial>
+	internal class ModelMaterial : IEquatable<ModelMaterial>
 	{
 		public string Name
 		{
@@ -65,7 +65,7 @@ namespace ExportDAE
 			set;
 		}
 
-		public ExportedMaterial()
+		public ModelMaterial()
 		{
 			this.Name = "Default material";
 			this.Color = Color.Gray;
@@ -79,7 +79,7 @@ namespace ExportDAE
 			this.TextureRotationAngle = 0.0;
 		}
 
-		public bool Equals(ExportedMaterial other)
+		public bool Equals(ModelMaterial other)
 		{
 			return other != null && this.GetHashCode() == other.GetHashCode();
 		}
