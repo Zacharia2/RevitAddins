@@ -31,37 +31,30 @@ namespace ExportDAE
             }
         }
         private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> Geometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
-        private Dictionary<Tuple<Document, ElementId>, ModelMaterial> ExportedMaterial = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
+        private Dictionary<Tuple<Document, ElementId>, ModelMaterial> Material = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
         private COLLADA mode = new COLLADA();
         public ColladaStream(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial, Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries)
         {
             //保存模型及材质
             Geometries = documentAndMaterialIdToGeometries;
-            ExportedMaterial = documentAndMaterialIdToExportedMaterial;
+            Material = documentAndMaterialIdToExportedMaterial;
             
-            //init asset
+            //init asset：创建工具和信息
             mode.asset = new asset();
             mode.asset.contributor[0] = new assetContributor();
             mode.asset.unit = new assetUnit();
             mode.asset.up_axis = new UpAxisType();
             mode.Items = new object[0];
 
-            //init library_geometries
+            //init library_geometries：创建节点对象library_geometries
             library_geometries library_geom = new library_geometries();
 
-            // init library_visual_scenes
+            // init library_visual_scenes：创建节点对象library_visual_scenes
             library_visual_scenes lib_visual_scene = new library_visual_scenes();
 
 
         }
 
-        /// <summary>
-        /// 设置描述——单位名、单位、及指定向上轴向
-        /// </summary>
-        /// <param name="unit_name">单位名称</param>
-        /// <param name="meter">单位，默认米</param>
-        /// <param name="up_axis">向上轴向</param>
-       
 
 
         /*
@@ -72,7 +65,14 @@ namespace ExportDAE
           WriteXmlLibraryEffects();
           WriteXmlLibraryVisualScenes();
           */
-          
+
+        /// <summary>
+        /// 设置描述——单位名、单位、及指定向上轴向
+        /// </summary>
+        /// <param name="unit_name">单位名称</param>
+        /// <param name="meter">单位，默认米</param>
+        /// <param name="up_axis">向上轴向</param>
+      
         public void PrintModel()
         {
 
@@ -85,8 +85,8 @@ namespace ExportDAE
             mode.asset.up_axis = UpAxisType.Z_UP;
 
             library_geometries library_geom = new library_geometries();
-            library_geom.geometry = new geometry[1]; 
-            library_geom.geometry[0] = new geometry();
+            library_geom.geometry = new geometry[1]; //创建一个数组。
+            library_geom.geometry[0] = new geometry();//将对象赋值给数组。
 
             mesh geomMesh = new mesh();
             //source[] source  = new source[3]
@@ -108,7 +108,7 @@ namespace ExportDAE
                 Tuple<Document, ElementId> key = current.Key;
                 if(current.Value != null && current.Value.Count > 0)
                 {
-                    ModelMaterial exprMaterial = ExportedMaterial[key];
+                    ModelMaterial exprMaterial = Material[key];
                     library_geom.geometry[0].id = "geom-" + key.GetHashCode();
                     library_geom.geometry[0].name = exprMaterial.Name;
 

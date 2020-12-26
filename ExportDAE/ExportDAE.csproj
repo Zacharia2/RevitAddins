@@ -116,6 +116,13 @@
     <EmbeddedResource Include="Resources\blender_32.png" />
     <EmbeddedResource Include="Resources\blender_64.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="Temporary\BL测试模型.dae" />
+    <None Include="Temporary\SU测试模型.dae" />
+    <None Include="Temporary\通用测试模型.dae" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Temporary\通用测试模型截图.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

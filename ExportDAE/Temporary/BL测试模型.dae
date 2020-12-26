@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- library类似于Flash中的库，以它开头的节点代表着几何体、材质、灯光等对象，-->
+
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  
+	
+	
+	
+	
+	<asset><!-- 模型描述 -->
+    <contributor><!-- 贡献者 -->
+      <author>Blender User</author><!--作者-->
+      <authoring_tool>Blender 2.83.6 commit date:2020-09-09, commit time:07:32, hash:8610c697773e</authoring_tool><!-- 生成工具 -->
+    </contributor>
+    <created>2020-09-20T11:04:51</created><!-- 创建时间 -->
+    <modified>2020-09-20T11:04:51</modified><!-- 修改时间 -->
+    <unit name="meter" meter="1"/><!-- 单位 -->
+    <up_axis>Z_UP</up_axis><!-- 向上轴线 -->
+  </asset>
+	
+	
+	
+	
+  <library_cameras><!-- 相机 -->
+    <camera id="Camera-camera" name="Camera">
+      <optics>
+		  <!--光学-->
+        <technique_common>
+          <perspective>
+            <xfov sid="xfov">39.59775</xfov>
+            <aspect_ratio>1.777778</aspect_ratio>
+            <znear sid="znear">0.1</znear>
+            <zfar sid="zfar">100</zfar>
+          </perspective>
+        </technique_common>
+      </optics>
+      <extra>
+		  <!--额外的-->
+        <technique profile="blender">
+			<!--技术 配置文件 blender-->
+          <shiftx sid="shiftx" type="float">0</shiftx>  
+          <shifty sid="shifty" type="float">0</shifty>
+          <dof_distance sid="dof_distance" type="float">10</dof_distance>
+        </technique>
+      </extra>
+    </camera>
+  </library_cameras>
+	
+	
+	
+	
+	
+  <library_lights><!-- 灯光 -->
+    <light id="Light-light" name="Light">
+      <technique_common>
+		  <!--通用技术参数-->
+        <point>
+			<!--点灯光-->
+          <color sid="color">1000 1000 1000</color><!--颜色-->
+          <constant_attenuation>1</constant_attenuation><!--常数衰减-->
+          <linear_attenuation>0</linear_attenuation><!--线性衰减-->
+          <quadratic_attenuation>0.00111109</quadratic_attenuation><!--二次衰减-->
+        </point>
+      </technique_common>
+      <extra>
+		  <!--额外的参数信息-->
+        <technique profile="blender">
+			<!--技术文件  blender-->
+          <type sid="type" type="int">0</type><!--sid安全标识符-->
+          <flag sid="flag" type="int">0</flag><!--标记-->
+          <mode sid="mode" type="int">1</mode>
+          <gamma sid="blender_gamma" type="float">1</gamma><!--伽马-->
+          <red sid="red" type="float">1</red>
+          <green sid="green" type="float">1</green>
+          <blue sid="blue" type="float">1</blue>
+          <shadow_r sid="blender_shadow_r" type="float">0</shadow_r>
+          <shadow_g sid="blender_shadow_g" type="float">0</shadow_g>
+          <shadow_b sid="blender_shadow_b" type="float">0</shadow_b>
+          <energy sid="blender_energy" type="float">1000</energy>
+          <dist sid="blender_dist" type="float">29.99998</dist>
+          <spotsize sid="spotsize" type="float">75</spotsize>
+          <spotblend sid="spotblend" type="float">0.15</spotblend>
+          <att1 sid="att1" type="float">0</att1>
+          <att2 sid="att2" type="float">1</att2>
+          <falloff_type sid="falloff_type" type="int">2</falloff_type>
+          <clipsta sid="clipsta" type="float">0.04999995</clipsta>
+          <clipend sid="clipend" type="float">30.002</clipend>
+          <bias sid="bias" type="float">1</bias>
+          <soft sid="soft" type="float">3</soft>
+          <bufsize sid="bufsize" type="int">2880</bufsize>
+          <samp sid="samp" type="int">3</samp>
+          <buffers sid="buffers" type="int">1</buffers>
+          <area_shape sid="area_shape" type="int">1</area_shape>
+          <area_size sid="area_size" type="float">0.1</area_size>
+          <area_sizey sid="area_sizey" type="float">0.1</area_sizey>
+          <area_sizez sid="area_sizez" type="float">1</area_sizez>
+        </technique>
+      </extra>
+    </light>
+  </library_lights>
+	
+	
+	
+	
+	
+  <library_effects>
+	  <!--特效-->
+	  <effect id="Material-effect">
+		  <!--特效id：  材质特效-->
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color sid="emission">0 0 0 1</color>
+            </emission>
+            <diffuse>
+              <color sid="diffuse">0.8 0.8 0.8 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float sid="ior">1.45</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+	
+	
+	
+	
+	
+  <library_images/><!--图片-->
+
+
+
+
+	<library_materials><!-- 材质-->
+    <material id="Material-material" name="Material">
+      <instance_effect url="#Material-effect"/><!-- 实例效果-->
+    </material>
+  </library_materials>
+	
+	
+
+	
+  <library_geometries>
+	  <!--几何数据-->
+    <geometry id="Cube-mesh" name="Cube">
+		<!--几何体Cube-->
+      <mesh>
+		  <!--网格-->
+
+        <source id="Cube-mesh-positions"> <!-- 源数据ID：立方体网格位置-顶点（顶点的坐标）-->
+          <float_array id="Cube-mesh-positions-array" count="24">1 1 1 1 1 -1 1 -1 1 1 -1 -1 -1 1 1 -1 1 -1 -1 -1 1 -1 -1 -1</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-positions-array" count="8" stride="3">
+				<!--count包括  stride步幅，意思是每个参数包括8个顶点，共有跨度为3-->
+              <param name="X" type="float"/>1 1 1 1 1 -1 1 -1
+              <param name="Y" type="float"/>1 1 -1 -1 -1 1 1 -1
+              <param name="Z" type="float"/>1 -1 -1 -1 1 -1 -1 -1
+            </accessor>
+          </technique_common>
+        </source>
+
+        <source id="Cube-mesh-normals"><!-- 源数据ID：立方体网格法线-->
+          <float_array id="Cube-mesh-normals-array" count="18">0 0 1 0 -1 0 -1 0 0 0 0 -1 1 0 0 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-normals-array" count="6" stride="3">
+				<!--count包括  stride步幅，意思是每个参数包括6个法线，共有跨度为3-->
+              <param name="X" type="float"/>0 0 1 0 -1 0
+              <param name="Y" type="float"/>-1 0 0 0 0 -1
+              <param name="Z" type="float"/> 1 0 0 0 1 0
+            </accessor>
+          </technique_common>
+        </source>
+
+        <source id="Cube-mesh-map-0">
+			<!--网格纹理映射坐标-->
+          <float_array id="Cube-mesh-map-0-array" count="72">0.875 0.5 0.625 0.75 0.625 0.5 0.625 0.75 0.375 1 0.375 0.75 0.625 0 0.375 0.25 0.375 0 0.375 0.5 0.125 0.75 0.125 0.5 0.625 0.5 0.375 0.75 0.375 0.5 0.625 0.25 0.375 0.5 0.375 0.25 0.875 0.5 0.875 0.75 0.625 0.75 0.625 0.75 0.625 1 0.375 1 0.625 0 0.625 0.25 0.375 0.25 0.375 0.5 0.375 0.75 0.125 0.75 0.625 0.5 0.625 0.75 0.375 0.75 0.625 0.25 0.625 0.5 0.375 0.5</float_array>
+          <technique_common>
+            <accessor source="#Cube-mesh-map-0-array" count="36" stride="2">
+              <param name="S" type="float"/>
+              <param name="T" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+
+        <vertices id="Cube-mesh-vertices"><!-- 源数据ID：立方体网格向量（法线）-->
+          <input semantic="POSITION" source="#Cube-mesh-positions"/>
+        </vertices>
+
+        <triangles material="Material-material" count="12"> <!-- 三角形信息，"count"属性告诉我们在这个结点下到底有多少个三角形
+        如果你读取<triangles>的子结点，你会读到3个<input>结点，它们的”semantic”属性的值分别是"VERTEX" "NORMAL" 和 "TEXCOORD"。
+        这实际上是说，我们三角形数据每个顶点有一个值，第一个是顶点的位置（注：坐标），第二个是顶点的法线，第三个是顶点的纹理映射坐标。--> 
+          <input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+          <input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+          <p>4 0 0   2 0 1      0 0 2 
+		   <!--第一个数字4代表该点中——VERTEX中指向的顶点坐标，第二个代表指向的法线，低三个指向TEXCOORD，纹理坐标。
+		  三角形一共是三个点，所以有三组数字表示每个点的纹理，法线，位置信息。构成一个三角形-->
+		  
+		  <!--第二组三角形
+		  2 1 3
+		  2：VERTEX，1：NORMAL，3：TEXCOORD
+		  -->
+		  2 1 3     7 1 4       3 1 5 
+		  
+		  6 2 6     5 2 7       7 2 8 
+		  
+		  1 3 9     7 3 10      5 3 11 
+		  
+		  0 4 12    3 4 13      1 4 14 
+		  
+		  4 5 15    1 5 16      5 5 17 
+		  
+		  4 0 18    6 0 19      2 0 20 
+		  
+		  2 1 21    6 1 22      7 1 23 
+		  
+		  6 2 24    4 2 25      5 2 26 
+		  
+		  1 3 27    3 3 28      7 3 29 
+		  
+		  0 4 30    2 4 31      3 4 32 
+		  
+		  4 5 33    0 5 34      1 5 35</p>
+        </triangles>
+        
+		<!--非三角形。
+		<polylist material="Material-material" count="6">
+			<input semantic="VERTEX" source="#Cube-mesh-vertices" offset="0"/>
+			<input semantic="NORMAL" source="#Cube-mesh-normals" offset="1"/>
+			<input semantic="TEXCOORD" source="#Cube-mesh-map-0" offset="2" set="0"/>
+			<vcount>4 4 4 4 4 4 </vcount>
+			<p>
+				0 0 0       4 0 1    6 0 2    2 0 3
+				3 1 4       2 1 5    6 1 6    7 1 7
+				7 2 8       6 2 9    4 2 10   5 2 11
+				5 3 12      1 3 13   3 3 14   7 3 15
+				1 4 16      0 4 17   2 4 18   3 4 19
+				5 5 20      4 5 21   0 5 22   1 5 23
+			  </p>
+		</polylist>
+		-->
+		
+		  
+      </mesh>
+    </geometry>
+  </library_geometries>
+	
+	
+
+	
+  <library_visual_scenes>
+	  <!--可视化场景：在blender中是场景集合，存放模型的集合。--> 
+    <visual_scene id="Scene" name="Scene">
+      <node id="Camera" name="Camera" type="NODE">
+        <matrix sid="transform">0.6859207 -0.3240135 0.6515582 7.358891 0.7276763 0.3054208 -0.6141704 -6.925791 0 0.8953956 0.4452714 4.958309 0 0 0 1</matrix>
+        <instance_camera url="#Camera-camera"/>
+      </node>
+      <node id="Light" name="Light" type="NODE">
+        <matrix sid="transform">-0.2908646 -0.7711008 0.5663932 4.076245 0.9551712 -0.1998834 0.2183912 1.005454 -0.05518906 0.6045247 0.7946723 5.903862 0 0 0 1</matrix>
+        <instance_light url="#Light-light"/>
+      </node><!--以Cube为例，在此节点中模型为节点Node，-->
+      <node id="Cube" name="Cube" type="NODE">
+        <matrix sid="transform">1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1</matrix><!--matrix（矩阵）标识符为transform（变换）一共是16个数字.matrix节点，位置、旋转属性，是一个16个数据的字符串，其实就是一个Matrix3D。-->
+		  <instance_geometry url="#Cube-mesh" name="Cube"> <!-- 实力几何图形（模型）引用#Cube-mesh，名字为Cube-->
+          <bind_material>
+			  <!--绑定的材质-->
+            <technique_common>
+				<!--通用技术参数-->
+              <instance_material symbol="Material-material" target="#Material-material">
+				  <!--实例材质属性:符号Material-material,目标引用#Material-material，，其中引用是是# + ID-->
+                <bind_vertex_input semantic="UVMap" input_semantic="TEXCOORD" input_set="0"/>
+              </instance_material>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+		
+    </visual_scene>
+  </library_visual_scenes>
+
+
+	<!--	
+	场景标记指定一个可视场景，有时也指定一个物理场景
+说明：
+　　许多元素包含“id =”属性，Collada使用“url =”属性来关联其他内部元素。
+　　这将在构建几何体时跟踪和替换id，在最终使用scene标记将文档绑定在一起，该结构使用了多个library_X标记D-->
+  <scene>
+    <instance_visual_scene url="#Scene"/>  
+  </scene>
+</COLLADA>
