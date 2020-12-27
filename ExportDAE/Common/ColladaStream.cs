@@ -39,18 +39,7 @@ namespace ExportDAE
             Geometries = documentAndMaterialIdToGeometries;
             Material = documentAndMaterialIdToExportedMaterial;
             
-            //init asset：创建工具和信息
-            //mode.asset = new asset();
-            //mode.asset.contributor[0] = new assetContributor();
-            //mode.asset.unit = new assetUnit();//这里有问题
-            //mode.asset.up_axis = new UpAxisType();
-            //mode.Items = new object[0];
 
-            //init library_geometries：创建节点对象library_geometries
-            //library_geometries library_geom = new library_geometries();
-
-            // init library_visual_scenes：创建节点对象library_visual_scenes
-            //library_visual_scenes lib_visual_scene = new library_visual_scenes();
 
             GetGeometrieList();
 
@@ -85,7 +74,18 @@ namespace ExportDAE
       
         public void PrintModel()
         {
+            //init asset：创建工具和信息
+            //mode.asset = new asset();
+            //mode.asset.contributor[0] = new assetContributor();
+            //mode.asset.unit = new assetUnit();//这里有问题
+            //mode.asset.up_axis = new UpAxisType();
+            //mode.Items = new object[0];
 
+            //init library_geometries：创建节点对象library_geometries
+            //library_geometries library_geom = new library_geometries();
+
+            // init library_visual_scenes：创建节点对象library_visual_scenes
+            //library_visual_scenes lib_visual_scene = new library_visual_scenes();
             mode.asset.created = DateTime.Now;
             mode.asset.unit.name = "Ft";
             mode.asset.unit.meter = 0.3048;

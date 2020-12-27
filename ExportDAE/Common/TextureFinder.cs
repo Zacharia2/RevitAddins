@@ -10,34 +10,36 @@ namespace ExportDAE
 	internal class TextureFinder    //纹理查找器
 	{
 		private ICollection<string> textureFolders;
+		private Document document;
 
-		private Document revitDocument;
-
-		public void Init(Document revitDocument)
+		public void Init(Document document)
 		{
 			//初始化，获取revit模型
-			this.revitDocument = revitDocument;
-			this.CollectTexturesFolders();
+			this.document = document;
+			CollectTexturesFolders();
 		}
 
 		public void Clear()
 		{
-			this.textureFolders.Clear();
+			textureFolders.Clear();
 		}
 
+		/// <summary>
+		/// 收集材质纹理文件夹
+		/// </summary>
 		private void CollectTexturesFolders()
 		{
 			// 收集纹理文件夹
-			this.textureFolders = new List<string>(); //创建List文件列表
+			textureFolders = new List<string>(); //创建List文件列表
 			try
 			{
 				// 查找文档磁盘文件的标准路径。
-				string directoryName = Path.GetDirectoryName(this.revitDocument.PathName);
+				string directoryName = Path.GetDirectoryName(document.PathName);
 				// 判断是否为空
-				if (!this.textureFolders.Contains(directoryName))
+				if (!textureFolders.Contains(directoryName))
 				{
 					// 不为空则加入到纹理文件夹列表中
-					this.textureFolders.Add(directoryName);
+					textureFolders.Add(directoryName);
 				}
 			}
 			catch (Exception)
@@ -75,19 +77,19 @@ namespace ExportDAE
 			string[] subKeyNames = registryKey.GetSubKeyNames();
 			for (int i = 0; i < registryKey.SubKeyCount; i++)
 			{
-				RegistryKey expr_77 = registryKey.OpenSubKey(subKeyNames[i]);
-				string text = (string)expr_77.GetValue("LibraryPaths");
+				RegistryKey subKey = registryKey.OpenSubKey(subKeyNames[i]);
+				string text = (string)subKey.GetValue("LibraryPaths");
 				if (text != null)
 				{
 					string item = Path.GetDirectoryName(text) + "\\assetlibrary_base.fbm";
-					if (!this.textureFolders.Contains(item))
+					if (!textureFolders.Contains(item))
 					{
 
 						//搜索结果为文件夹C:\Program Files (x86)\Common Files\Autodesk Shared\Materials\2020\assetlibrary_base.fbm
-						this.textureFolders.Add(item); //加入到纹理文件夹列表中
+						textureFolders.Add(item); //加入到纹理文件夹列表中
 					}
 				}
-				expr_77.Close();
+				subKey.Close();
 			}
 			registryKey.Close();
 
@@ -136,25 +138,30 @@ namespace ExportDAE
 			string[] subKeyNames2 = registryKey.GetSubKeyNames();
 			for (int j = 0; j < registryKey.SubKeyCount; j++)
 			{
-				RegistryKey expr_10D = registryKey.OpenSubKey(subKeyNames2[j]);
-				string text2 = (string)expr_10D.GetValue("LibraryPaths");
+				RegistryKey subKey2 = registryKey.OpenSubKey(subKeyNames2[j]);
+				string text2 = (string)subKey2.GetValue("LibraryPaths");
 				if (text2 != null)
 				{
 					string item2 = Path.GetDirectoryName(text2) + "\\" + subKeyNames2[j] + "\\Mats";
-					if (!this.textureFolders.Contains(item2))
+					if (!textureFolders.Contains(item2))
 					{
 						//查找结果为贴图所在的文件夹C:\Program Files (x86)\Common Files\Autodesk Shared\Materials\Textures\2（item2）\Mats
-						this.textureFolders.Add(item2);
+						textureFolders.Add(item2);
 					}
 				}
-				expr_10D.Close();
+				subKey2.Close();
 			}
 			registryKey.Close();
 		}
 
+
+		/// <summary>
+		/// 从Asset资源中查找漫反射纹理路径
+		/// </summary>
+		/// <param name="exportedMaterial">被导出的材质</param>
+		/// <param name="asset">Asset资源</param>
 		public void FindDiffuseTexturePathFromAsset(ModelMaterial exportedMaterial, Asset asset)
 		{
-			//从Asset资源中查找漫反射纹理路径
 			//判读asset是否为空
 			if (asset == null)
 			{
@@ -164,25 +171,25 @@ namespace ExportDAE
 			try
 			{
 				//不为空 创建新的变量asset2，并调用本类中的查找贴图资源，条件为asset变量。
-				Asset asset2 = this.FindTextureAsset(asset);
-				//判断 asset2 是否为空
-				if (asset2 != null)
+				Asset assetTexture = FindTextureAsset(asset);
+				//判断 assetTexture 是否为空
+				if (assetTexture != null)
 				{
 					//非空则查找资源中的"unifiedbitmap_Bitmap"文件并修复文件路径为绝对路径。
-					exportedMaterial.TexturePath = (asset2.FindByName("unifiedbitmap_Bitmap") as AssetPropertyString).Value;
-					exportedMaterial.TexturePath = this.FixTexturePath(exportedMaterial.TexturePath);
+					exportedMaterial.TexturePath = (assetTexture.FindByName("unifiedbitmap_Bitmap") as AssetPropertyString).Value;
+					exportedMaterial.TexturePath = FixTexturePath(exportedMaterial.TexturePath);
 					//定义资源属性距离
 					AssetPropertyDistance assetPropertyDistance;
 					//判断资产中是否包含“texture_RealWorldScaleX”
-					if (asset2.FindByName("texture_RealWorldScaleX") != null)
+					if (assetTexture.FindByName("texture_RealWorldScaleX") != null)
 					{
 						//"包含texture_RealWorldScaleX"则将值赋值给assetPropertyDistance
-						assetPropertyDistance = (asset2.FindByName("texture_RealWorldScaleX") as AssetPropertyDistance);
+						assetPropertyDistance = (assetTexture.FindByName("texture_RealWorldScaleX") as AssetPropertyDistance);
 					}
 					else
 					{
 						//否则 "unifiedbitmap_RealWorldScaleX  真实世界尺度" 将未定义赋值给assetPropertyDistance
-						assetPropertyDistance = (asset2.FindByName("unifiedbitmap_RealWorldScaleX") as AssetPropertyDistance);
+						assetPropertyDistance = (assetTexture.FindByName("unifiedbitmap_RealWorldScaleX") as AssetPropertyDistance);
 					}
 					//判断距离属性非空，转换后的值（资源距离属性附加单位距离）除以1 得到小数，赋值给纹理U比例尺
 					if (assetPropertyDistance != null)
@@ -192,13 +199,13 @@ namespace ExportDAE
 
 					//创建新的资源距离属性2重复上述步骤，将纹理缩放赋值给exportedMaterial.TextureScaleV
 					AssetPropertyDistance assetPropertyDistance2;
-					if (asset2.FindByName("texture_RealWorldScaleY") != null)
+					if (assetTexture.FindByName("texture_RealWorldScaleY") != null)
 					{
-						assetPropertyDistance2 = (asset2.FindByName("texture_RealWorldScaleY") as AssetPropertyDistance);
+						assetPropertyDistance2 = (assetTexture.FindByName("texture_RealWorldScaleY") as AssetPropertyDistance);
 					}
 					else
 					{
-						assetPropertyDistance2 = (asset2.FindByName("unifiedbitmap_RealWorldScaleY") as AssetPropertyDistance);
+						assetPropertyDistance2 = (assetTexture.FindByName("unifiedbitmap_RealWorldScaleY") as AssetPropertyDistance);
 					}
 					if (assetPropertyDistance2 != null)
 					{
@@ -207,26 +214,26 @@ namespace ExportDAE
 					//判断是否存在texture_RealWorldOffsetX 存在  创建assetPropertyDistance3，不存在默认使用未定义。
 					//将纹理贴图偏移量加上单位赋值给exportedMaterial.TextureOffsetU
 					AssetPropertyDistance assetPropertyDistance3;
-					if (asset2.FindByName("texture_RealWorldOffsetX") != null)
+					if (assetTexture.FindByName("texture_RealWorldOffsetX") != null)
 					{
-						assetPropertyDistance3 = (asset2.FindByName("texture_RealWorldOffsetX") as AssetPropertyDistance);
+						assetPropertyDistance3 = (assetTexture.FindByName("texture_RealWorldOffsetX") as AssetPropertyDistance);
 					}
 					else
 					{
-						assetPropertyDistance3 = (asset2.FindByName("unifiedbitmap_RealWorldOffsetX") as AssetPropertyDistance);
+						assetPropertyDistance3 = (assetTexture.FindByName("unifiedbitmap_RealWorldOffsetX") as AssetPropertyDistance);
 					}
 					if (assetPropertyDistance3 != null)
 					{
 						exportedMaterial.TextureOffsetU = UnitUtils.ConvertToInternalUnits(assetPropertyDistance3.Value, assetPropertyDistance3.DisplayUnitType);
 					}
 					AssetPropertyDistance assetPropertyDistance4;
-					if (asset2.FindByName("texture_RealWorldOffsetY") != null)
+					if (assetTexture.FindByName("texture_RealWorldOffsetY") != null)
 					{
-						assetPropertyDistance4 = (asset2.FindByName("texture_RealWorldOffsetY") as AssetPropertyDistance);
+						assetPropertyDistance4 = (assetTexture.FindByName("texture_RealWorldOffsetY") as AssetPropertyDistance);
 					}
 					else
 					{
-						assetPropertyDistance4 = (asset2.FindByName("unifiedbitmap_RealWorldOffsetY") as AssetPropertyDistance);
+						assetPropertyDistance4 = (assetTexture.FindByName("unifiedbitmap_RealWorldOffsetY") as AssetPropertyDistance);
 					}
 					if (assetPropertyDistance4 != null)
 					{
@@ -234,13 +241,13 @@ namespace ExportDAE
 					}
 					//查找texture_WAngle 并赋值给assetPropertyDoubl不存在则使用默认未定义。之后赋值给exportedMaterial.TextureRotationAngle加上某个数值。
 					AssetPropertyDouble assetPropertyDouble;
-					if (asset2.FindByName("texture_WAngle") != null)
+					if (assetTexture.FindByName("texture_WAngle") != null)
 					{
-						assetPropertyDouble = (asset2.FindByName("texture_WAngle") as AssetPropertyDouble);
+						assetPropertyDouble = (assetTexture.FindByName("texture_WAngle") as AssetPropertyDouble);
 					}
 					else
 					{
-						assetPropertyDouble = (asset2.FindByName("unifiedbitmap_WAngle") as AssetPropertyDouble);
+						assetPropertyDouble = (assetTexture.FindByName("unifiedbitmap_WAngle") as AssetPropertyDouble);
 					}
 					if (assetPropertyDouble != null)
 					{
@@ -264,14 +271,14 @@ namespace ExportDAE
 				try
 				{
 					Asset asset = assetProperty as Asset;
-					if (this.IsTextureAsset(asset))
+					if (IsTextureAsset(asset))
 					{
 						Asset result = asset;
 						return result;
 					}
 					for (int i = 0; i < asset.Size; i++)
 					{
-						Asset asset2 = this.FindTextureAsset(asset.Get(i));
+						Asset asset2 = FindTextureAsset(asset.Get(i));
 						if (asset2 != null)
 						{
 							Asset result = asset2;
@@ -287,7 +294,7 @@ namespace ExportDAE
 			{
 				for (int j = 0; j < assetProperty.NumberOfConnectedProperties; j++)
 				{
-					Asset asset3 = this.FindTextureAsset(assetProperty.GetConnectedProperty(j));
+					Asset asset3 = FindTextureAsset(assetProperty.GetConnectedProperty(j));
 					if (asset3 != null)
 					{
 						return asset3;
@@ -299,7 +306,7 @@ namespace ExportDAE
 
 		private bool IsTextureAsset(Asset asset)
 		{
-			AssetProperty assetProprty = this.GetAssetProprty(asset, "assettype");
+			AssetProperty assetProprty = GetAssetProprty(asset, "assettype");
 			return (assetProprty != null && (assetProprty as AssetPropertyString).Value == "texture") || this.GetAssetProprty(asset, "unifiedbitmap_Bitmap") != null;
 		}
 
@@ -315,8 +322,14 @@ namespace ExportDAE
 			return null;
 		}
 
+
+		/// <summary>
+		/// 修复文件路径——转化为文件绝对路径。
+		/// </summary>
+		/// <param name="inputPath">输入要处理的路径</param>
+		/// <returns></returns>
 		private string FixTexturePath(string inputPath)
-			//修复文件路径——转化为文件绝对路径。
+			
 		{
 			//判断输入路径是否为空为空返回“”。
 			if (inputPath.Length == 0)
@@ -328,10 +341,10 @@ namespace ExportDAE
 			//检索字符"|"所在字符串的引索，并判读是否存在（大于等于0）
 			if (text.IndexOf('|') >= 0)
 			{
-				//存在 赋值给 expr_IC变量
-				string expr_1C = text;
+				//存在 赋值给 temp变量
+				string temp = text;
 				//删除"|"字符。
-				text = expr_1C.Remove(expr_1C.IndexOf('|'));
+				text = temp.Remove(temp.IndexOf('|'));
 			}
 			//判读指定文件text是否存在。
 			if (File.Exists(text))
@@ -349,7 +362,7 @@ namespace ExportDAE
 			if (!File.Exists(text))
 			{
 				//不存在则查找贴图并将找到的结果赋值给text变量
-				text = this.FindTextureInTextureFolders(text);
+				text = FindTextureInTextureFolders(text);
 			}
 			//提交text
 			return text;
@@ -377,14 +390,14 @@ namespace ExportDAE
 				// 获取元素ID
 				ElementId typeId = element.GetTypeId();
 				//获取外部文件参考
-				ExternalFileReference externalFileReference = (this.revitDocument.GetElement(typeId) as ElementType).GetExternalFileReference();
+				ExternalFileReference externalFileReference = (document.GetElement(typeId) as ElementType).GetExternalFileReference();
 				//判断外部文件参考类型是不是
 				if (externalFileReference.ExternalFileReferenceType.Equals(AssetPropertyType.Float))
 				{
 					//是的话将模型路径转换为用户可见路径，（链接模型的完整路径作为参数）
 					string inputPath = ModelPathUtils.ConvertModelPathToUserVisiblePath(externalFileReference.GetAbsolutePath());
 					//最后返回文件绝对路径。
-					return this.FixTexturePath(inputPath);
+					return FixTexturePath(inputPath);
 				}
 			}
 			catch (Exception)
@@ -409,7 +422,7 @@ namespace ExportDAE
 			//
 			for (int i = 0; i < asset.NumberOfConnectedProperties; i++)
 			{
-				str = str + "       " + this.GetPropertyDescription(asset.GetConnectedProperty(i));
+				str = str + "       " + GetPropertyDescription(asset.GetConnectedProperty(i));
 			}
 			if (asset.NumberOfConnectedProperties > 0)
 			{
@@ -419,14 +432,22 @@ namespace ExportDAE
 			for (int j = 0; j < asset.Size; j++)
 			{
 				AssetProperty assetProperty = asset.Get(j);
-				str += this.GetPropertyDescription(assetProperty);
+				str += GetPropertyDescription(assetProperty);
 			}
 			return str + "Asset prop EEND\n";
 		}
 
-		private string GetPropertyDescription(AssetProperty assetProperty)
+		/// <summary>
+		/// 获取属性说明
+		/// text = assetProperty.Name + ": " + assetProperty.Type.ToString() + "  " + 属性值 + "CONNECTED START\n" +      多个assetProperty + "CONNECTED END\n"
+		/// </summary>
+		/// <param name="assetProperty"></param>
+		/// <returns></returns>
+		public string GetPropertyDescription(AssetProperty assetProperty)
 		{
 			string text = assetProperty.Name + ": " + assetProperty.Type.ToString() + "  ";
+
+			//数值代表变量类型。获取属性值并加入字符串末尾。
 			switch (assetProperty.Type)
 			{
 				case AssetPropertyType.Boolean:
@@ -463,7 +484,7 @@ namespace ExportDAE
 					text += (assetProperty as AssetPropertyDistance).Value.ToString();
 					break;
 				case AssetPropertyType.Asset:
-					text = text + "\n" + this.GetAssetDescription(assetProperty as Asset);
+					text = text + "\n" + GetAssetDescription(assetProperty as Asset);
 					break;
 				case AssetPropertyType.Longlong:
 					text += (assetProperty as AssetPropertyInt64).Value.ToString();
@@ -475,14 +496,17 @@ namespace ExportDAE
 					text += (assetProperty as AssetPropertyFloatArray).GetValue().ToString();
 					break;
 			}
+			//添加换行。
 			text += "\n";
+
+			//当前连接的属性数。
 			if (assetProperty.NumberOfConnectedProperties > 0)
 			{
 				text += "CONNECTED START\n";
 			}
 			for (int i = 0; i < assetProperty.NumberOfConnectedProperties; i++)
 			{
-				text = text + "       " + this.GetPropertyDescription(assetProperty.GetConnectedProperty(i));
+				text = text + "       " + GetPropertyDescription(assetProperty.GetConnectedProperty(i));
 			}
 			if (assetProperty.NumberOfConnectedProperties > 0)
 			{
@@ -490,5 +514,71 @@ namespace ExportDAE
 			}
 			return text;
 		}
+
+
+
+
+
+		//未使用的方法
+		//在资源中查找纹理路径
+		private string FindTexturePathInAsset(Asset asset)
+		{
+			for (int i = 0; i < asset.Size; i++)
+			{
+				AssetProperty assetProperty = asset.Get(i);//获取给定索引处的属性。
+				string text = FindTexturePathInAssetProperty(assetProperty);
+				if (text.Length > 0)
+				{
+					return text;
+				}
+			}
+			return "";
+		}
+
+		private string FindTexturePathInAssetProperty(AssetProperty assetProperty)
+		{
+			AssetPropertyType type = assetProperty.Type;
+			if (type != AssetPropertyType.String) //String = 11,非字符串类型，判定为Asset类型。
+			{
+				if (type == AssetPropertyType.Asset)//Asset = 15
+				{
+					string text = FindTexturePathInAsset(assetProperty as Asset);
+					if (text.Length > 0)
+					{
+						return text;
+					}
+				}
+			}
+			else if (assetProperty.Name == "unifiedbitmap_Bitmap")
+			{
+				return (assetProperty as AssetPropertyString).Value.ToString();
+			}
+			for (int i = 0; i < assetProperty.NumberOfConnectedProperties; i++)
+			{
+				string text2 = FindTexturePathInAssetProperty(assetProperty.GetConnectedProperty(i));
+				if (text2.Length > 0)
+				{
+					return text2;
+				}
+			}
+			return "";
+		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

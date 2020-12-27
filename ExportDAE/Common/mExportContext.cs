@@ -11,7 +11,7 @@ using System.Text;
 namespace ExportDAE
 {
 
-    internal class mExportContext : IExportContext
+    internal class MExportContext : IExportContext
     {
 		[CompilerGenerated]
 		[Serializable]
@@ -21,7 +21,7 @@ namespace ExportDAE
 			public static Func<ModelMaterial, bool> mIsValidTexturePath;
 			public static Func<ModelMaterial, string> TexturePath1;
 			public static Func<ModelMaterial, string> TexturePath2;
-			public static Func<char, bool> tools__25_0;
+			public static Func<char, bool> IsChar1;
 			public static Func<char, bool> IsChar2;
 
 
@@ -51,9 +51,9 @@ namespace ExportDAE
 			}
 
 			/// <summary>
-			/// Is1	 指示指定的 Unicode 字符是否属于空格类别、字母或十进制数字类别、标点符号类别。中的一种。
+			/// IsSADM	 指示指定的 Unicode 字符是否属于空格类别、字母或十进制数字类别、标点符号类别。中的一种。
 			/// </summary>
-			internal bool Is1(char c) 
+			internal bool IsSADM(char c) 
 			{
 				return char.IsWhiteSpace(c) || char.IsLetterOrDigit(c) || char.IsPunctuation(c);
 			}
@@ -61,7 +61,7 @@ namespace ExportDAE
 			/// <summary>
 			/// Is2	 指示指定的 Unicode 字符是否属于空格类别、字母或十进制数字类别、'.'、'-'之中的一种。
 			/// </summary>
-			internal bool Is2(char c)
+			internal bool IsSADS(char c)
 			{
 				return char.IsWhiteSpace(c) || char.IsLetterOrDigit(c) || c == '.' || c == '-';
 			}
@@ -69,9 +69,7 @@ namespace ExportDAE
         }
 
 
-
-
-		private Document mainDocument;
+		private Document document;
         private ExportingOptions exportingOptions;
         private bool isCancelled = false;
         private bool isElementDoubleSided;
@@ -91,14 +89,18 @@ namespace ExportDAE
         private static Encoding Utf16Encoder = Encoding.GetEncoding("unicode", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
 
 
-        //构造方法
-        public mExportContext(Document document, ExportingOptions exportingOptions)
+		/// <summary>
+		/// 构造方法
+		/// </summary>
+		/// <param name="document">Revit活动视图的文档</param>
+		/// <param name="exportingOptions">保存导出的用户设置</param>
+		public MExportContext(Document document, ExportingOptions exportingOptions)
         {
 			//初始化类，接受revit文档，导出选项，创建纹理查找工具，接受指定资产类型的revit数组并转换为集合。
 			//创建解析首选项工具，并设置计算引用几何对象及设置提取几何图形精度为完整。
 
-			//接受revit文档保存在mainDocument中。
-            mainDocument = document;
+			//接受revit文档保存在document中。
+            this.document = document;
             //接收导出选项保存在exportingOptions中。
             this.exportingOptions = exportingOptions;
 			//创建TextureFinder（纹理查找工具）。保存在textureFinder中。
@@ -114,8 +116,8 @@ namespace ExportDAE
 
 			}
 
-			//创建一个对象以指定几何解析中的用户首选项。保存在geometryOptions中。
-			geometryOptions = mainDocument.Application.Create.NewGeometryOptions();
+            //创建一个对象以指定几何解析中的用户首选项。保存在geometryOptions中。
+            geometryOptions = this.document.Application.Create.NewGeometryOptions();
 			//确定是否计算对几何对象的引用。计算引用的几何对象。
             geometryOptions.ComputeReferences = true;
 			//使用这些选项提取的几何图形的详细程度。精细程度为完整。
@@ -126,17 +128,21 @@ namespace ExportDAE
         {
 
 			//创建文档与元素ID的元组，参数为本类中保存的revit文档及  IntegerValue为-1的无效ElementId。
-			currentDocumentAndMaterialId = new Tuple<Document, ElementId>(this.mainDocument, ElementId.InvalidElementId);
+			currentDocumentAndMaterialId = new Tuple<Document, ElementId>(document, ElementId.InvalidElementId);
 			//textureFinder初始化，得到revit文档。
-			textureFinder.Init(this.mainDocument);
+			textureFinder.Init(document);
+
+
 			//从堆栈中移除所有的元素。
             documentStack.Clear();
 			//向Stack的顶部添加revit文档对象。
-            documentStack.Push(this.mainDocument);
-            //从堆栈中移除所有的元素。
+            documentStack.Push(document);
+            
+			
+			//从堆栈中移除所有的元素。
             transformationStack.Clear();
 			//向Stack的顶部    TODO
-			transformationStack.Push(this.GetProjectLocationTransform(this.exportingOptions.InsertionPoint));
+			transformationStack.Push(GetProjectLocationTransform(exportingOptions.InsertionPoint));
             return true;
         }
 
@@ -172,9 +178,9 @@ namespace ExportDAE
 			}
 
 			//TODO collada
-			//new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(exportingOptions.FilePath);
-			new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
-			documentAndMaterialIdToGeometries.Clear();
+			new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(exportingOptions.FilePath);
+            //new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
+            documentAndMaterialIdToGeometries.Clear();
 			ChangeCurrentMaterial(currentDocumentAndMaterialId);
 		}
 
@@ -266,7 +272,7 @@ namespace ExportDAE
 		private Transform GetProjectLocationTransform(int insertionPoint)
 		{
 			Transform transform = Transform.Identity;
-			using (IEnumerator<Element> enumerator = new FilteredElementCollector(this.mainDocument).OfClass(typeof(BasePoint)).GetEnumerator())
+			using (IEnumerator<Element> enumerator = new FilteredElementCollector(this.document).OfClass(typeof(BasePoint)).GetEnumerator())
 			{
 				while (enumerator.MoveNext())
 				{
@@ -283,7 +289,7 @@ namespace ExportDAE
 					}
 				}
 			}
-			ProjectPosition projectPosition = this.mainDocument.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
+			ProjectPosition projectPosition = this.document.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
 			Transform transformFromLocation = this.GetTransformFromLocation(projectPosition.EastWest, projectPosition.NorthSouth, projectPosition.Elevation, projectPosition.Angle);
 			return transform.Inverse * transformFromLocation;
 		}
@@ -294,44 +300,55 @@ namespace ExportDAE
 			return Transform.CreateTranslation(new XYZ(eastWest, northSouth, elevation)) * transform;
 		}
 
+
+		/// <summary>
+		/// 将要导出的材质
+		/// </summary>
+		/// <returns>返回字典类型数据</returns>
 		private Dictionary<Tuple<Document, ElementId>, ModelMaterial> ExportMaterials()
 		{
 			Dictionary<Tuple<Document, ElementId>, ModelMaterial> dictionary = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
-			foreach (Tuple<Document, ElementId> current in this.documentAndMaterialIdToGeometries.Keys)
+			foreach (Tuple<Document, ElementId> current in documentAndMaterialIdToGeometries.Keys)
 			{
 				ElementId item = current.Item2;
-				if (item.IntegerValue <= this.currentDecalMaterialId)
+				if (item.IntegerValue <= currentDecalMaterialId)
 				{
-					dictionary[current] = this.ExportDecalMaterial(item);
+					dictionary[current] = ExportDecalMaterial(item);
 				}
 				else
 				{
-					dictionary[current] = this.ExportMaterial(current);
+					dictionary[current] = ExportMaterial(current);
 				}
 			}
 			return dictionary;
 		}
+		
 
+		/// <summary>
+		/// 重新编码整理名字
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
 		private string CleanName(string name)
 		{
 			string text;
-			if (this.exportingOptions.UnicodeSupport)
+			if (exportingOptions.UnicodeSupport)
 			{
-				byte[] bytes = mExportContext.Utf16Encoder.GetBytes(name);
-				text = mExportContext.Utf16Encoder.GetString(bytes);
+				byte[] utf16Bytes = Utf16Encoder.GetBytes(name);
+				text = Utf16Encoder.GetString(utf16Bytes);
 			}
 			else
 			{
-				byte[] bytes2 = mExportContext.usAsciiEncoder.GetBytes(name);
-				text = mExportContext.usAsciiEncoder.GetString(bytes2);
+				byte[] asciiBytes = usAsciiEncoder.GetBytes(name);
+				text = usAsciiEncoder.GetString(asciiBytes);
 			}
-			IEnumerable<char> arg_65_0 = text;
-			Func<char, bool> arg_65_1;
-			if ((arg_65_1 = Inner.tools__25_0) == null)
+			IEnumerable<char> char_set = text;
+			Func<char, bool> IsSADM; //S：空格、A：字母、D：数字、M：标点符号。
+			if ((IsSADM = Inner.IsChar1) == null)
 			{
-				arg_65_1 = (Inner.tools__25_0 = new Func<char, bool>(Inner.tools.Is1));
+				IsSADM = Inner.IsChar1 = new Func<char, bool>(Inner.tools.IsSADM);
 			}
-			text = new string(arg_65_0.Where(arg_65_1).ToArray<char>());
+			text = new string(char_set.Where(IsSADM).ToArray());
 			return SecurityElement.Escape(text);
 		}
 
@@ -348,7 +365,7 @@ namespace ExportDAE
 			//string 类型名为@string的变量,目的是防止与string重名。
 			string @string;
 			//如果用户选择支持Unicode编码，那么将传入的字符串通过Utf16Encoder得到Utf16编码的字符串保存在@string中。
-			if (this.exportingOptions.UnicodeSupport)
+			if (exportingOptions.UnicodeSupport)
 			{
 				byte[] bytes = Utf16Encoder.GetBytes(name);
 				@string = Utf16Encoder.GetString(bytes);
@@ -363,14 +380,14 @@ namespace ExportDAE
 			IEnumerable<char> char_set = @string;
 
 			//创建判断字符是否否和特定要求的委托方法
-			Func<char, bool> IsChar2;
-			if ((IsChar2 = Inner.IsChar2) == null)
+			Func<char, bool> IsSADS;//S：空格、A：字母、D：数字、S：特殊标点符号。
+			if ((IsSADS = Inner.IsChar2) == null)
 			{
-				IsChar2 = Inner.IsChar2 = new Func<char, bool>(Inner.tools.Is2);
+				IsSADS = Inner.IsChar2 = new Func<char, bool>(Inner.tools.IsSADS);
 			}
 
 			//筛选一个表中有没有满足条件的数据,返回一个字符串。
-			return new string(char_set.Where(IsChar2).ToArray());
+			return new string(char_set.Where(IsSADS).ToArray());
 		}
 
 
@@ -383,19 +400,19 @@ namespace ExportDAE
 			Material material = item.GetElement(item2) as Material;
 			if (material != null && material.IsValidObject)
 			{
-				exportedMaterial.Name = this.CleanName(material.Name);
+				exportedMaterial.Name = CleanName(material.Name);
 				if (material.Color.IsValid)
 				{
-					exportedMaterial.Color = System.Drawing.Color.FromArgb((int)material.Color.Red, (int)material.Color.Green, (int)material.Color.Blue);
+					exportedMaterial.Color = System.Drawing.Color.FromArgb(material.Color.Red, material.Color.Green, material.Color.Blue);
 				}
-				exportedMaterial.Shininess = (double)material.Shininess;
-				exportedMaterial.Transparency = (double)material.Transparency;
+				exportedMaterial.Shininess = material.Shininess;
+				exportedMaterial.Transparency = material.Transparency;
 				if (material.AppearanceAssetId != ElementId.InvalidElementId)
 				{
 					Asset asset = (item.GetElement(material.AppearanceAssetId) as AppearanceAssetElement).GetRenderingAsset();
 					if (asset.Size == 0)
 					{
-						AssetSetIterator assetSetIterator = this.libraryAssetSet.ForwardIterator();
+						AssetSetIterator assetSetIterator = libraryAssetSet.ForwardIterator();
 						while (assetSetIterator.MoveNext())
 						{
 							Asset asset2 = assetSetIterator.Current as Asset;
@@ -406,11 +423,11 @@ namespace ExportDAE
 							}
 						}
 					}
-					this.textureFinder.FindDiffuseTexturePathFromAsset(exportedMaterial, asset);
+					textureFinder.FindDiffuseTexturePathFromAsset(exportedMaterial, asset);
 					AssetPropertyDoubleArray4d assetPropertyDoubleArray4d = asset.FindByName("generic_diffuse") as AssetPropertyDoubleArray4d;
 					if (assetPropertyDoubleArray4d != null)
 					{
-						exportedMaterial.Color = System.Drawing.Color.FromArgb((int)(byte)(assetPropertyDoubleArray4d.GetValueAsDoubles().ElementAt(1) * 255.0), (int)((byte)(assetPropertyDoubleArray4d.GetValueAsDoubles().ElementAt(1) * 255.0)), (int)(byte)(assetPropertyDoubleArray4d.GetValueAsDoubles().ElementAt(2) * 255.0));
+						exportedMaterial.Color = System.Drawing.Color.FromArgb((byte)(assetPropertyDoubleArray4d.GetValueAsDoubles().ElementAt(1) * 255.0), ((byte)(assetPropertyDoubleArray4d.GetValueAsDoubles().ElementAt(1) * 255.0)), (byte)(assetPropertyDoubleArray4d.GetValueAsDoubles().ElementAt(2) * 255.0));
 					}
 				}
 			}
@@ -421,8 +438,8 @@ namespace ExportDAE
 		{
 			return new ModelMaterial
 			{
-				Name = this.CleanName(this.decalMaterialIdToDecal[decalMaterialId].Name),
-				TexturePath = this.textureFinder.FindDiffuseTextureDecal(this.decalMaterialIdToDecal[decalMaterialId])
+				Name = CleanName(decalMaterialIdToDecal[decalMaterialId].Name),
+				TexturePath = textureFinder.FindDiffuseTextureDecal(decalMaterialIdToDecal[decalMaterialId])
 			};
 		}
 
@@ -449,11 +466,11 @@ namespace ExportDAE
 			{
 				return;
 			}
-			if (geometryObject.Visibility != null)
+			/*if (geometryObject.Visibility != null)
 			{
 				return;
-			}
-			GraphicsStyle graphicsStyle = this.documentStack.Peek().GetElement(geometryObject.GraphicsStyleId) as GraphicsStyle;
+			}*/
+			GraphicsStyle graphicsStyle = documentStack.Peek().GetElement(geometryObject.GraphicsStyleId) as GraphicsStyle;
 			if (graphicsStyle != null && graphicsStyle.Name.Contains("Light Source"))
 			{
 				return;
@@ -532,7 +549,7 @@ namespace ExportDAE
 			{
 				if (!(face == null))
 				{
-					Mesh mesh = face.Triangulate((double)this.exportingOptions.LevelOfDetail / 15.0);
+					Mesh mesh = face.Triangulate(exportingOptions.LevelOfDetail / 15.0);
 					if (!(mesh == null) && !mesh.Visibility.Equals(3))
 					{
 						ModelGeometry exportedGeometry = new ModelGeometry();
@@ -582,11 +599,15 @@ namespace ExportDAE
 				ElementId typeId = element.GetTypeId();
 				ElementType E = documentStack.Peek().GetElement(typeId) as ElementType;
 
-				//获取与元素引用的外部文件有关的信息。该对象引用的外部文件的类型。
-				if (E.GetExternalFileReference().ExternalFileReferenceType == ExternalFileReferenceType.Decal)
-				{
-					return true;
+                //获取与元素引用的外部文件有关的信息。该对象引用的外部文件的类型。
+                if(E != null)
+                {
+					if (E.GetExternalFileReference().ExternalFileReferenceType == ExternalFileReferenceType.Decal)
+					{
+						return true;
+					}
 				}
+				
 			}
 			catch (Exception)
 			{

@@ -66,24 +66,24 @@ namespace ExportDAE
 		public void OptimizePoints()
 		{
 			Dictionary<int, int> dictionary = new Dictionary<int, int>();
-			IList<XYZ> list = new List<XYZ>(this.Points.Count);
-			for (int i = 0; i < this.Indices.Count; i++)
+			IList<XYZ> list = new List<XYZ>(Points.Count);
+			for (int i = 0; i < Indices.Count; i++)
 			{
-				XYZ xYZ = this.Points[this.Indices[i]];
+				XYZ xYZ = Points[Indices[i]];
 				int hashCode = xYZ.GetHashCode();
 				if (dictionary.ContainsKey(hashCode))
 				{
-					this.Indices[i] = dictionary[hashCode];
+					Indices[i] = dictionary[hashCode];
 				}
 				else
 				{
 					list.Add(xYZ);
 					int value = list.Count - 1;
 					dictionary[hashCode] = value;
-					this.Indices[i] = value;
+					Indices[i] = value;
 				}
 			}
-			this.Points = list;
+			Points = list;
 		}
 
 		/// <summary>
@@ -92,31 +92,31 @@ namespace ExportDAE
 		/// <param name="mirrored">镜像</param>
 		public void CalculateNormals(bool mirrored)
 		{
-			this.Normals = new List<XYZ>(this.Points.Count);
-			for (int i = 0; i < this.Points.Count; i++)
+			Normals = new List<XYZ>(Points.Count);
+			for (int i = 0; i < Points.Count; i++)
 			{
 				this.Normals.Add(XYZ.Zero);
 			}
-			for (int j = 0; j < this.Points.Count; j++)
+			for (int j = 0; j < Points.Count; j++)
 			{
-				for (int k = 0; k < this.Indices.Count; k += 3)
+				for (int k = 0; k < Indices.Count; k += 3)
 				{
-					if (this.Indices[k + 0] == j || this.Indices[k + 1] == j || this.Indices[k + 2] == j)
+					if (Indices[k + 0] == j || Indices[k + 1] == j || Indices[k + 2] == j)
 					{
 						XYZ xYZ;
 						XYZ xYZ2;
 						XYZ xYZ3;
 						if (mirrored)
 						{
-							xYZ = this.Points[this.Indices[k + 0]];
-							xYZ2 = this.Points[this.Indices[k + 2]];
-							xYZ3 = this.Points[this.Indices[k + 1]];
+							xYZ = Points[Indices[k + 0]];
+							xYZ2 = Points[Indices[k + 2]];
+							xYZ3 = Points[Indices[k + 1]];
 						}
 						else
 						{
-							xYZ = this.Points[this.Indices[k + 0]];
-							xYZ2 = this.Points[this.Indices[k + 1]];
-							xYZ3 = this.Points[this.Indices[k + 2]];
+							xYZ = Points[Indices[k + 0]];
+							xYZ2 = Points[Indices[k + 1]];
+							xYZ3 = Points[Indices[k + 2]];
 						}
 						XYZ arg_139_0 = xYZ2 - xYZ;
 						XYZ xYZ4 = xYZ3 - xYZ;
@@ -124,45 +124,45 @@ namespace ExportDAE
 						if (!xYZ5.IsZeroLength())
 						{
 							xYZ5 = xYZ5.Normalize();
-							if (this.Normals[j].IsZeroLength())
+							if (Normals[j].IsZeroLength())
 							{
-								IList<XYZ> normals = this.Normals;
+								IList<XYZ> normals = Normals;
 								int index = j;
 								normals[index] += xYZ5;
 							}
-							else if (this.Normals[j].DotProduct(xYZ5) > 0.1)
+							else if (Normals[j].DotProduct(xYZ5) > 0.1)
 							{
-								IList<XYZ> normals = this.Normals;
+								IList<XYZ> normals = Normals;
 								int index = j;
 								normals[index] += xYZ5;
 							}
 							else
 							{
-								this.Points.Add(this.Points[j]);
-								this.Normals.Add(xYZ5);
-								int value = this.Points.Count - 1;
-								if (this.Indices[k + 0] == j)
+								Points.Add(Points[j]);
+								Normals.Add(xYZ5);
+								int value = Points.Count - 1;
+								if (Indices[k + 0] == j)
 								{
-									this.Indices[k + 0] = value;
+									Indices[k + 0] = value;
 								}
-								if (this.Indices[k + 1] == j)
+								if (Indices[k + 1] == j)
 								{
-									this.Indices[k + 1] = value;
+									Indices[k + 1] = value;
 								}
-								if (this.Indices[k + 2] == j)
+								if (Indices[k + 2] == j)
 								{
-									this.Indices[k + 2] = value;
+									Indices[k + 2] = value;
 								}
 							}
 						}
 					}
 				}
 			}
-			for (int l = 0; l < this.Normals.Count; l++)
+			for (int l = 0; l < Normals.Count; l++)
 			{
-				this.Normals[l] = this.Normals[l].Normalize();
+				Normals[l] = Normals[l].Normalize();
 			}
-			this.DistributionOfNormals = 0;
+			DistributionOfNormals = 0;
 		}
 
 		/// <summary>
@@ -170,9 +170,9 @@ namespace ExportDAE
 		/// </summary>
 		public void FlipNormals()
 		{
-			for (int i = 0; i < this.Normals.Count; i++)
+			for (int i = 0; i < Normals.Count; i++)
 			{
-				this.Normals[i].Negate();
+				Normals[i].Negate();
 			}
 		}
 
@@ -189,10 +189,10 @@ namespace ExportDAE
 			double num4 = -3.4028234663852886E+38;
 			double num5 = -3.4028234663852886E+38;
 			double num6 = -3.4028234663852886E+38;
-			int count = this.Points.Count;
+			int count = Points.Count;
 			for (int i = 0; i < count; i++)
 			{
-				XYZ xYZ = this.Points[i];
+				XYZ xYZ = Points[i];
 				if (xYZ.X < num)
 				{
 					num = xYZ.X;
@@ -229,7 +229,7 @@ namespace ExportDAE
 		/// <param name="flipForizontal"></param>
 		public void CalculateUVs(bool keepDensity = true, bool flipForizontal = false)
 		{
-			this.Uvs = new List<UV>(this.Points.Count);
+			Uvs = new List<UV>(Points.Count);
 			XYZ xYZ = new XYZ();
 			XYZ xYZ2 = new XYZ();
 			this.CalculateBoundingBox(ref xYZ, ref xYZ2);
@@ -240,15 +240,15 @@ namespace ExportDAE
 			{
 				num2 = (num = (num3 = 1.0));
 			}
-			for (int i = 0; i < this.Points.Count; i++)
+			for (int i = 0; i < Points.Count; i++)
 			{
 				double num4 = 0.0;
 				double num5 = 0.0;
-				XYZ xYZ3 = this.Points[i];
-				XYZ xYZ4 = this.Normals[i];
+				XYZ xYZ3 = Points[i];
+				XYZ xYZ4 = Normals[i];
 				if (xYZ4.IsZeroLength())
 				{
-					this.Uvs.Add(UV.Zero);
+					Uvs.Add(UV.Zero);
 				}
 				else
 				{
@@ -267,7 +267,7 @@ namespace ExportDAE
 						num4 = xYZ4.Y / Math.Abs(xYZ4.Y) * ((xYZ3.X - xYZ.X) / num);
 						num5 = -((xYZ3.Z - xYZ.Z) / num3);
 					}
-					this.Uvs.Add(new UV(num4, flipForizontal ? (1.0 - num5) : num5));
+					Uvs.Add(new UV(num4, flipForizontal ? (1.0 - num5) : num5));
 				}
 			}
 		}
@@ -277,33 +277,33 @@ namespace ExportDAE
 		/// </summary>
 		public void MakeDoubleSided()
 		{
-			((List<XYZ>)this.Points).Capacity = this.Points.Count * 2;
-			((List<XYZ>)this.Normals).Capacity = this.Normals.Count * 2;
-			((List<UV>)this.Uvs).Capacity = this.Uvs.Count * 2;
-			((List<int>)this.Indices).Capacity = this.Indices.Count * 2;
-			int count = this.Points.Count;
+			((List<XYZ>)Points).Capacity = Points.Count * 2;
+			((List<XYZ>)Normals).Capacity = this.Normals.Count * 2;
+			((List<UV>)Uvs).Capacity = this.Uvs.Count * 2;
+			((List<int>)Indices).Capacity = this.Indices.Count * 2;
+			int count = Points.Count;
 			for (int i = 0; i < count; i++)
 			{
-				this.Points.Add(this.Points[i]);
+				Points.Add(Points[i]);
 			}
-			int count2 = this.Normals.Count;
+			int count2 = Normals.Count;
 			for (int j = 0; j < count2; j++)
 			{
-				this.Normals.Add(this.Normals[j]);
+				Normals.Add(Normals[j]);
 			}
-			int count3 = this.Uvs.Count;
+			int count3 = Uvs.Count;
 			for (int k = 0; k < count3; k++)
 			{
-				this.Uvs.Add(this.Uvs[k]);
+				Uvs.Add(Uvs[k]);
 			}
 			for (int l = 0; l < count2; l++)
 			{
-				this.Normals[l].Negate();
+				Normals[l].Negate();
 			}
-			int count4 = this.Indices.Count;
+			int count4 = Indices.Count;
 			for (int m = 0; m < count4; m++)
 			{
-				this.Indices.Add(this.Indices[m]);
+				Indices.Add(Indices[m]);
 			}
 			int value = 0;
 			for (int n = 0; n < count4; n++)
@@ -313,13 +313,13 @@ namespace ExportDAE
 				{
 					if (num == 2)
 					{
-						this.Indices[n] = value;
+						Indices[n] = value;
 					}
 				}
 				else
 				{
-					value = this.Indices[n];
-					this.Indices[n] = this.Indices[n + 1];
+					value = Indices[n];
+					Indices[n] = Indices[n + 1];
 				}
 			}
 		}

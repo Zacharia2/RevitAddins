@@ -54,7 +54,7 @@ namespace ExportDAE
 
 		public ExporterDialog()
 		{
-			this.InitializeComponent();
+			InitializeComponent();
             InsertionPoint.SelectedIndex = DataAccessor.InsertionPoint;
             SkipSmallerThan.Value = DataAccessor.SkipSmallerThan;
             SkipInteriorDetails.Checked = DataAccessor.SkipInteriorDetails;
@@ -62,15 +62,6 @@ namespace ExportDAE
             UnicodeSupport.Checked = DataAccessor.UnicodeSupport;
             GeometryOptimization.Checked = DataAccessor.GeometryOptimization;
             levelOfDetail.Value = DataAccessor.levelOfDetail;
-			/*RegistryKey registryKey = Registry.CurrentUser.CreateSubKey("Software\\Act-3D\\RevitToLumionBridge");
-			this.InsertionPoint.SelectedIndex = Convert.ToInt32(registryKey.GetValue("InsertionPoint", 0), CultureInfo.InvariantCulture);
-			this.SkipSmallerThan.Value = Convert.ToDecimal(registryKey.GetValue("SkipSmallerThan", 0.1), CultureInfo.InvariantCulture);
-			this.SkipInteriorDetails.Checked = Convert.ToBoolean(registryKey.GetValue("SkipInteriorDetails", 0), CultureInfo.InvariantCulture);
-			this.CollectTextures.Checked = Convert.ToBoolean(registryKey.GetValue("CollectTextures", 1), CultureInfo.InvariantCulture);
-			this.UnicodeSupport.Checked = Convert.ToBoolean(registryKey.GetValue("UnicodeSupport", 0), CultureInfo.InvariantCulture);
-			this.GeometryOptimization.Checked = Convert.ToBoolean(registryKey.GetValue("GeometryOptimization", 0), CultureInfo.InvariantCulture);
-			this.levelOfDetail.Value = Math.Min(Convert.ToInt32(registryKey.GetValue("LevelOfDetail", 4), CultureInfo.InvariantCulture), 10);
-			registryKey.Close();*/
 		}
 
 
@@ -83,7 +74,7 @@ namespace ExportDAE
 				base.DialogResult = DialogResult.None;
 			}
 
-            //TODO 设置一个工具类来全局存储访问这些数据
+            //TODO 设置一个工具类来全局存储访问这些数据，保存这些值是为了下一次打开软件还是上一次的设置，避免重复设置。
             DataAccessor.InsertionPoint = InsertionPoint.SelectedIndex;
             DataAccessor.SkipSmallerThan = SkipSmallerThan.Value;
             DataAccessor.SkipInteriorDetails = SkipInteriorDetails.Checked;
@@ -91,15 +82,6 @@ namespace ExportDAE
             DataAccessor.UnicodeSupport = UnicodeSupport.Checked;
             DataAccessor.GeometryOptimization = GeometryOptimization.Checked;
             DataAccessor.levelOfDetail = levelOfDetail.Value;
-           /* RegistryKey reg = Registry.CurrentUser.OpenSubKey("Software\\mRevitAddins\\ExportDAE", true);
-            reg.SetValue("InsertionPoint", this.InsertionPoint.SelectedIndex);
-            reg.SetValue("SkipSmallerThan", this.SkipSmallerThan.Value);
-            reg.SetValue("SkipInteriorDetails", this.SkipInteriorDetails.Checked);
-            reg.SetValue("CollectTextures", this.CollectTextures.Checked);
-            reg.SetValue("UnicodeSupport", this.UnicodeSupport.Checked);
-            reg.SetValue("GeometryOptimization", this.GeometryOptimization.Checked);
-            reg.SetValue("LevelOfDetail", this.levelOfDetail.Value);
-            reg.Close();*/
         }
 
 		private void levelOfDetail_ValueChanged(object sender, EventArgs e)
