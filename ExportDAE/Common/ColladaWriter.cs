@@ -253,6 +253,11 @@ namespace ExportDAE
 		this.sb.Append("</geometry>\n");
 	}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="documentAndMaterialIdHash">定义Source的唯一ID</param>
+		/// <param name="geometries"></param>
 	private void WriteXmlGeometrySourcePositions(int documentAndMaterialIdHash, IList<ModelGeometry> geometries)
 	{
 		Func<ModelGeometry, int> arg_20_1;

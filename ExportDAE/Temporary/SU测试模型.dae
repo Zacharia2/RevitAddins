@@ -56,6 +56,7 @@
         <geometry id="ID3">
             <mesh>
                 <source id="ID6">
+					<!--POSITION-->
                     <float_array id="ID9" count="72">0 39.37008 0 39.37008 39.37008 0 39.37008 0 0 0 0 0 39.37008 39.37008 0 0 39.37008 0 0 39.37008 39.37008 39.37008 39.37008 39.37008 39.37008 0 0 39.37008 39.37008 0 39.37008 39.37008 39.37008 39.37008 0 39.37008 0 0 0 39.37008 0 0 39.37008 0 39.37008 0 0 39.37008 0 39.37008 0 0 0 0 0 0 39.37008 0 39.37008 39.37008 39.37008 39.37008 39.37008 0 39.37008 39.37008 0 0 39.37008 39.37008 0 39.37008</float_array>
                     <technique_common>
                         <accessor count="24" source="#ID9" stride="3">
@@ -66,6 +67,7 @@
                     </technique_common>
                 </source>
                 <source id="ID7">
+					<!--NORMAL-->
                     <float_array id="ID10" count="72">0 0 -1 0 0 -1 0 0 -1 0 0 -1 -0 1 0 -0 1 0 -0 1 0 -0 1 0 1 0 0 1 0 0 1 0 0 1 0 0 -0 -1 -0 -0 -1 -0 -0 -1 -0 -0 -1 -0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -0 -0 1 -0 -0 1 -0 -0 1 -0 -0 1</float_array>
                     <technique_common>
                         <accessor count="24" source="#ID10" stride="3">
@@ -81,7 +83,7 @@
                 </vertices>
                 <polylist count="6" material="Material2">
                     <input offset="0" semantic="VERTEX" source="#ID8" />
-                    <vcount>4 4 4 4 4 4</vcount>
+                    <vcount>4 4 4 4 4 4</vcount><!--每个面有多少个点，或者每个面是几边形-->
                     <p>0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23</p>
                 </polylist>
             </mesh>

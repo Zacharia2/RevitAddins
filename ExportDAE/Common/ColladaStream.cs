@@ -40,21 +40,31 @@ namespace ExportDAE
             Material = documentAndMaterialIdToExportedMaterial;
             
             //init asset：创建工具和信息
-            mode.asset = new asset();
-            mode.asset.contributor[0] = new assetContributor();
-            mode.asset.unit = new assetUnit();
-            mode.asset.up_axis = new UpAxisType();
-            mode.Items = new object[0];
+            //mode.asset = new asset();
+            //mode.asset.contributor[0] = new assetContributor();
+            //mode.asset.unit = new assetUnit();//这里有问题
+            //mode.asset.up_axis = new UpAxisType();
+            //mode.Items = new object[0];
 
             //init library_geometries：创建节点对象library_geometries
-            library_geometries library_geom = new library_geometries();
+            //library_geometries library_geom = new library_geometries();
 
             // init library_visual_scenes：创建节点对象library_visual_scenes
-            library_visual_scenes lib_visual_scene = new library_visual_scenes();
+            //library_visual_scenes lib_visual_scene = new library_visual_scenes();
+
+            GetGeometrieList();
 
 
         }
 
+        public bool GetGeometrieList()
+        {
+            foreach (Tuple<Document, ElementId> key in Geometries.Keys)
+            {
+                Console.WriteLine(string.Format("key: {0}::{1} ;;value：{2}", key.Item1,key.Item2, Geometries[key]));
+            }
+            return true;
+        }
 
 
         /*

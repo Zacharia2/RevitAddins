@@ -55,8 +55,8 @@ namespace ExportDAE
 			}
 			return Result.Succeeded;
 		}
-
-		internal void ExportView3D(Document document, View3D view3D, ExportingOptions exportingOptions)
+		
+		internal void ExportView3D(Document document, View3D view, ExportingOptions exportingOptions)
 		{
 			//将文档和导出模型设置提交给 导出上下文对象。
 			mExportContext myExportContext = new mExportContext(document, exportingOptions);
@@ -65,7 +65,8 @@ namespace ExportDAE
 			customExporter.IncludeGeometricObjects = false;
 			customExporter.ShouldStopOnError = false;
 			//使用CustomExporter导出模型。
-			customExporter.Export(view3D);
+			customExporter.Export(view);
+			
 		}
 
 		private string GetAssetDescription(Asset asset)

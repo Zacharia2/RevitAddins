@@ -2,7 +2,6 @@
 using Autodesk.Revit.DB.Visual;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -29,9 +28,9 @@ namespace ExportDAE
 			/// <summary>
 			/// IsValidTexturePath 判断贴图路径是否为空。
 			/// </summary>
-			internal bool IsValidTexturePath(ModelMaterial i) 	
+			internal bool IsValidTexturePath(ModelMaterial m) 	
 			{
-				return i.TexturePath != string.Empty;
+				return m.TexturePath != string.Empty;
 
 			}
 
@@ -74,7 +73,7 @@ namespace ExportDAE
 
 		private Document mainDocument;
         private ExportingOptions exportingOptions;
-        private bool isCancelled;
+        private bool isCancelled = false;
         private bool isElementDoubleSided;
         private Stack<ElementId> elementStack = new Stack<ElementId>();
 		//定义transform(坐标转换矩阵)类型的堆栈。
@@ -87,8 +86,8 @@ namespace ExportDAE
         private int currentDecalMaterialId = -2147483648;
         private Dictionary<ElementId, Element> decalMaterialIdToDecal = new Dictionary<ElementId, Element>();
         private Options geometryOptions;
-        private AssetSet libraryAssetSet;
-        private static Encoding usAsciiEncoder = Encoding.GetEncoding("us-ascii", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
+        private AssetSet libraryAssetSet = new AssetSet();
+		private static Encoding usAsciiEncoder = Encoding.GetEncoding("us-ascii", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
         private static Encoding Utf16Encoder = Encoding.GetEncoding("unicode", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
 
 
@@ -105,7 +104,16 @@ namespace ExportDAE
 			//创建TextureFinder（纹理查找工具）。保存在textureFinder中。
 			textureFinder = new TextureFinder();
 			//通过整数类型的资源属性类型转换为资产类型 获取指定类型的Revit中所有资产的数组。并转换为资产集合。保存在libraryAssetSet。中
-			libraryAssetSet = (AssetSet)document.Application.GetAssets((AssetType)AssetPropertyType.Integer);
+
+
+			IList<Asset> assets = document.Application.GetAssets(AssetType.Appearance);
+			foreach (Asset asset in assets)
+            {
+				
+				libraryAssetSet.Insert(asset);
+
+			}
+
 			//创建一个对象以指定几何解析中的用户首选项。保存在geometryOptions中。
 			geometryOptions = mainDocument.Application.Create.NewGeometryOptions();
 			//确定是否计算对几何对象的引用。计算引用的几何对象。
@@ -159,12 +167,13 @@ namespace ExportDAE
 				//定义导出材质的文件夹并将贴图放进这个文件夹。
 				CollectTextures(documentAndMaterialIdToExportedMaterial);
 
-
+				//确保路径是绝对路径
 				MakeTexturePathsRelative(documentAndMaterialIdToExportedMaterial);
 			}
 
 			//TODO collada
-			new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(exportingOptions.FilePath);
+			//new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(exportingOptions.FilePath);
+			new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
 			documentAndMaterialIdToGeometries.Clear();
 			ChangeCurrentMaterial(currentDocumentAndMaterialId);
 		}
@@ -565,19 +574,23 @@ namespace ExportDAE
 				}
 			}
 		}
-
+		//TODO 这里需要整改优化
 		public bool IsElementDecal(Element element)
 		{
 			try
 			{
 				ElementId typeId = element.GetTypeId();
-				if ((this.documentStack.Peek().GetElement(typeId) as ElementType).GetExternalFileReference().ExternalFileReferenceType.Equals(5))
+				ElementType E = documentStack.Peek().GetElement(typeId) as ElementType;
+
+				//获取与元素引用的外部文件有关的信息。该对象引用的外部文件的类型。
+				if (E.GetExternalFileReference().ExternalFileReferenceType == ExternalFileReferenceType.Decal)
 				{
 					return true;
 				}
 			}
 			catch (Exception)
 			{
+
 			}
 			return false;
 		}
@@ -587,7 +600,7 @@ namespace ExportDAE
 			GeometryElement source = element.get_Geometry(this.geometryOptions);
 			try
 			{
-				if (source.ToArray<GeometryObject>()[1].GetType() == typeof(Arc) && source.ToArray<GeometryObject>()[3].GetType() == typeof(Arc))
+				if (source.ToArray()[1].GetType() == typeof(Arc) && source.ToArray()[3].GetType() == typeof(Arc))
 				{
 					return true;
 				}
@@ -600,18 +613,18 @@ namespace ExportDAE
 
 		private void ExportDecal(Element element)
 		{
-			if (this.IsDecalCurved(element))
+			if (IsDecalCurved(element))
 			{
-				this.ExportDecalCurved(element);
+				ExportDecalCurved(element);
 				return;
 			}
-			this.ExportDecalFlat(element);
+			ExportDecalFlat(element);
 		}
 
 		private void ExportDecalFlat(Element element)
 		{
 			ModelGeometry exportedGeometry = new ModelGeometry();
-			exportedGeometry.Transform = this.transformationStack.Peek();
+			exportedGeometry.Transform = transformationStack.Peek();
 			GeometryElement arg_2F_0 = element.get_Geometry(this.geometryOptions);
 			exportedGeometry.Points = new List<XYZ>(4);
 			using (IEnumerator<GeometryObject> enumerator = arg_2F_0.GetEnumerator())
@@ -661,10 +674,10 @@ namespace ExportDAE
 			ModelGeometry exportedGeometry = new ModelGeometry();
 			exportedGeometry.Transform = this.transformationStack.Peek();
 			GeometryElement expr_23 = element.get_Geometry(this.geometryOptions);
-			Arc arc = expr_23.ToArray<GeometryObject>()[1] as Arc;
-			Curve arg_49_0 = expr_23.ToArray<GeometryObject>()[3] as Arc;
+			Arc arc = expr_23.ToArray()[1] as Arc;
+			Curve arg_49_0 = expr_23.ToArray()[3] as Arc;
 			XYZ[] array = arc.Tessellate().ToArray<XYZ>();
-			XYZ[] array2 = arg_49_0.Tessellate().ToArray<XYZ>();
+			XYZ[] array2 = arg_49_0.Tessellate().ToArray();
 			exportedGeometry.Points = new List<XYZ>(array.Length + array2.Length);
 			exportedGeometry.Uvs = new List<UV>(array.Length + array2.Length);
 			for (int i = 0; i < array.Length; i++)
@@ -753,11 +766,13 @@ namespace ExportDAE
 
 
 
-
-
+		/// <summary>
+		/// 如果您希望取消导出，则返回True，否则返回False。
+		/// </summary>
+		/// <returns></returns>
 		public bool IsCanceled()
         {
-			return this.isCancelled;
+			return isCancelled;
 		}
 
         public RenderNodeAction OnViewBegin(ViewNode node)
