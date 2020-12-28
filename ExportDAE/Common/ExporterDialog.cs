@@ -55,6 +55,7 @@ namespace ExportDAE
 		public ExporterDialog()
 		{
 			InitializeComponent();
+            WriteRuntime.Load();
             InsertionPoint.SelectedIndex = WriteRuntime.InsertionPoint;
             SkipSmallerThan.Value = WriteRuntime.SkipSmallerThan;
             SkipInteriorDetails.Checked = WriteRuntime.SkipInteriorDetails;
@@ -62,6 +63,7 @@ namespace ExportDAE
             UnicodeSupport.Checked = WriteRuntime.UnicodeSupport;
             GeometryOptimization.Checked = WriteRuntime.GeometryOptimization;
             levelOfDetail.Value = WriteRuntime.levelOfDetail;
+            
 		}
 
 
@@ -82,6 +84,7 @@ namespace ExportDAE
             WriteRuntime.UnicodeSupport = UnicodeSupport.Checked;
             WriteRuntime.GeometryOptimization = GeometryOptimization.Checked;
             WriteRuntime.levelOfDetail = levelOfDetail.Value;
+            WriteRuntime.Save();
         }
 
 		private void levelOfDetail_ValueChanged(object sender, EventArgs e)
@@ -230,6 +233,8 @@ namespace ExportDAE
             // CollectTextures
             // 
             this.CollectTextures.AutoSize = true;
+            this.CollectTextures.Checked = true;
+            this.CollectTextures.CheckState = System.Windows.Forms.CheckState.Checked;
             this.CollectTextures.Location = new System.Drawing.Point(21, 322);
             this.CollectTextures.Name = "CollectTextures";
             this.CollectTextures.Size = new System.Drawing.Size(89, 19);
@@ -241,6 +246,8 @@ namespace ExportDAE
             // UnicodeSupport
             // 
             this.UnicodeSupport.AutoSize = true;
+            this.UnicodeSupport.Checked = true;
+            this.UnicodeSupport.CheckState = System.Windows.Forms.CheckState.Checked;
             this.UnicodeSupport.Location = new System.Drawing.Point(21, 397);
             this.UnicodeSupport.Name = "UnicodeSupport";
             this.UnicodeSupport.Size = new System.Drawing.Size(123, 19);

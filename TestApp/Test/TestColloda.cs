@@ -1,16 +1,12 @@
-﻿using System;
-using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.Attributes;
-using Collada141;
+﻿using Collada141;
 
 namespace HelloRevit
 {
     //这是一个测试程序
-    [Transaction(TransactionMode.Manual)]
-    public class TestColloda : IExternalCommand
+    
+    public class TestColloda
     {
-        public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
+        public static void Main()
         {
 
             COLLADA model = new COLLADA();
@@ -238,7 +234,7 @@ namespace HelloRevit
             model.scene.instance_visual_scene.url = "#" + visaul.id;
 
             model.Save("C:\\ProgramData\\Autodesk\\revit\\Addins\\2020\\dd.dae");
-            return 0;
+            
         }
     }
 }
