@@ -2,273 +2,382 @@
 using Autodesk.Revit.DB.Visual;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security;
-using System.Text;
 
 namespace ExportDAE
 {
 
-    internal class MExportContext : IExportContext
-    {
-		[CompilerGenerated]
-		[Serializable]
-		private sealed class Inner
-		{
-			public static readonly Inner tools = new Inner();
-			public static Func<ModelMaterial, bool> mIsValidTexturePath;
-			public static Func<ModelMaterial, string> TexturePath1;
-			public static Func<ModelMaterial, string> TexturePath2;
-			public static Func<char, bool> IsChar1;
-			public static Func<char, bool> IsChar2;
-
-
-			/// <summary>
-			/// IsValidTexturePath 判断贴图路径是否为空。
-			/// </summary>
-			internal bool IsValidTexturePath(ModelMaterial m) 	
-			{
-				return m.TexturePath != string.Empty;
-
-			}
-
-			/// <summary>
-			/// GetTexturePath2 获取贴图路径
-			/// </summary>
-			internal string GetTexturePath1(ModelMaterial o) //GetTexturePath1
-			{
-				return o.TexturePath;
-			}
-
-			/// <summary>
-			/// GetTexturePath2 获取贴图路径
-			/// </summary>
-			internal string GetTexturePath2(ModelMaterial o)  
-			{
-				return o.TexturePath;
-			}
-
-			/// <summary>
-			/// IsSADM	 指示指定的 Unicode 字符是否属于空格类别、字母或十进制数字类别、标点符号类别。中的一种。
-			/// </summary>
-			internal bool IsSADM(char c) 
-			{
-				return char.IsWhiteSpace(c) || char.IsLetterOrDigit(c) || char.IsPunctuation(c);
-			}
-
-			/// <summary>
-			/// Is2	 指示指定的 Unicode 字符是否属于空格类别、字母或十进制数字类别、'.'、'-'之中的一种。
-			/// </summary>
-			internal bool IsSADS(char c)
-			{
-				return char.IsWhiteSpace(c) || char.IsLetterOrDigit(c) || c == '.' || c == '-';
-			}
-
-        }
-
-
+	internal class MExportContext : IExportContext
+	{
+		/// <summary>
+		/// 文档
+		/// </summary>
 		private Document document;
-        private ExportingOptions exportingOptions;
-        private bool isCancelled = false;
-        private bool isElementDoubleSided;
-        private Stack<ElementId> elementStack = new Stack<ElementId>();
-		//定义transform(坐标转换矩阵)类型的堆栈。
-        private Stack<Transform> transformationStack = new Stack<Transform>();
-		//定义revit文档类型的堆栈。
-        private Stack<Document> documentStack = new Stack<Document>();
-        private Tuple<Document, ElementId> currentDocumentAndMaterialId;
-        private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
-        private TextureFinder textureFinder;
-        private int currentDecalMaterialId = -2147483648;
-        private Dictionary<ElementId, Element> decalMaterialIdToDecal = new Dictionary<ElementId, Element>();
-        private Options geometryOptions;
-        private AssetSet libraryAssetSet = new AssetSet();
-		private static Encoding usAsciiEncoder = Encoding.GetEncoding("us-ascii", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
-        private static Encoding Utf16Encoder = Encoding.GetEncoding("unicode", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
+
+		/// <summary>
+		/// 用户导出设置
+		/// </summary>
+		private ExportingOptions userSetting;
+
+		/// <summary>
+		/// 是否结束导出？默认否。
+		/// </summary>
+		private bool isCancelled = false;
+		private bool isElementDoubleSided;
+
+		/// <summary>
+		/// 定义元素堆栈。
+		/// </summary>
+		private Stack<ElementId> elementStack = new Stack<ElementId>();
+		/// <summary>
+		/// 定义transform(坐标转换矩阵)类型的堆栈。
+		/// </summary>
+		private Stack<Transform> transformationStack = new Stack<Transform>();
+		/// <summary>
+		/// 定义revit文档类型的堆栈。
+		/// </summary>
+		private Stack<Document> documentStack = new Stack<Document>();
+
+		/// <summary>
+		/// 当前的Document 和 材质ID。
+		/// </summary>
+		private Tuple<Document, ElementId> currentDocumentAndMaterialId;
+
+		/// <summary>
+		/// 
+		/// </summary>
+		private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
+		private TextureFinder textureFinder;
+
+		/// <summary>
+		/// 当前Decal贴花效果材质ID，在游戏中，decal是一种非常常见的效果，常用来实现弹孔，血迹，涂鸦等效果。
+		/// </summary>
+		private int currentDecalMaterialId = Int32.MinValue;
+		private Dictionary<ElementId, Element> decalMaterialIdToDecal = new Dictionary<ElementId, Element>();
+
+		/// <summary>
+		/// 你要对几何对象做什么可选的修改？
+		/// </summary>
+		private Options Geometry_Options;
+		private AssetSet libraryAssetSet = new AssetSet();
+
 
 
 		/// <summary>
 		/// 构造方法
 		/// </summary>
 		/// <param name="document">Revit活动视图的文档</param>
-		/// <param name="exportingOptions">保存导出的用户设置</param>
-		public MExportContext(Document document, ExportingOptions exportingOptions)
-        {
+		/// <param name="userSetting">保存导出的用户设置</param>
+		public MExportContext(Document document, ExportingOptions userSetting)
+		{
 			//初始化类，接受revit文档，导出选项，创建纹理查找工具，接受指定资产类型的revit数组并转换为集合。
 			//创建解析首选项工具，并设置计算引用几何对象及设置提取几何图形精度为完整。
 
-			//接受revit文档保存在document中。
-            this.document = document;
-            //接收导出选项保存在exportingOptions中。
-            this.exportingOptions = exportingOptions;
-			//创建TextureFinder（纹理查找工具）。保存在textureFinder中。
+			this.document = document;
+			this.userSetting = userSetting;
 			textureFinder = new TextureFinder();
-			//通过整数类型的资源属性类型转换为资产类型 获取指定类型的Revit中所有资产的数组。并转换为资产集合。保存在libraryAssetSet。中
 
-
+			//获取文档中所有Appearance assets（materials）迭代保存到libraryAssetSet集合里面。
 			IList<Asset> assets = document.Application.GetAssets(AssetType.Appearance);
 			foreach (Asset asset in assets)
-            {
-				
+			{
+
 				libraryAssetSet.Insert(asset);
 
 			}
 
-            //创建一个对象以指定几何解析中的用户首选项。保存在geometryOptions中。
-            geometryOptions = this.document.Application.Create.NewGeometryOptions();
-			//确定是否计算对几何对象的引用。计算引用的几何对象。
-            geometryOptions.ComputeReferences = true;
-			//使用这些选项提取的几何图形的详细程度。精细程度为完整。
-			geometryOptions.DetailLevel = ViewDetailLevel.Fine;
-        }
-
-        public bool Start()
-        {
-
-			//创建文档与元素ID的元组，参数为本类中保存的revit文档及  IntegerValue为-1的无效ElementId。
-			currentDocumentAndMaterialId = new Tuple<Document, ElementId>(document, ElementId.InvalidElementId);
-			//textureFinder初始化，得到revit文档。
-			textureFinder.Init(document);
-
-
-			//从堆栈中移除所有的元素。
-            documentStack.Clear();
-			//向Stack的顶部添加revit文档对象。
-            documentStack.Push(document);
-            
-			
-			//从堆栈中移除所有的元素。
-            transformationStack.Clear();
-			//向Stack的顶部    TODO
-			transformationStack.Push(GetProjectLocationTransform(exportingOptions.InsertionPoint));
-            return true;
-        }
-
-        public void Finish()
-        {
-            if (documentAndMaterialIdToGeometries.Count > 0)
-            {
-                WriteFilePart();
-            }
-            textureFinder.Clear();
-        }
-
-
-
-
-
-
-
-		private void WriteFilePart()
-		{
-
-			//导出材质的文档和材质ID
-			Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial = ExportMaterials();
-
-			//判断是否已经完成CollectTextures（纹理收集）
-			if (exportingOptions.CollectTextures)
-			{
-				//定义导出材质的文件夹并将贴图放进这个文件夹。
-				CollectTextures(documentAndMaterialIdToExportedMaterial);
-
-				//确保路径是绝对路径
-				MakeTexturePathsRelative(documentAndMaterialIdToExportedMaterial);
-			}
-
-			//TODO collada
-			new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(exportingOptions.FilePath);
-            //new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
-            documentAndMaterialIdToGeometries.Clear();
-			ChangeCurrentMaterial(currentDocumentAndMaterialId);
+			//创建几何解析中的用户首选项。
+			Geometry_Options = this.document.Application.Create.NewGeometryOptions();
+			//确定是否计算对几何对象的引用。计算引用的几何对象。//使用这些选项提取的几何图形的详细程度。精细程度为完整。
+			Geometry_Options.ComputeReferences = true;
+			Geometry_Options.DetailLevel = ViewDetailLevel.Fine;
 		}
 
-		private void MakeTexturePathsRelative(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial)
+
+
+		/// <summary>
+		/// 在导出过程的最开始即在发送模型的第一个实体之前就调用此方法。
+		/// </summary>
+		/// <returns>如果您准备继续进行导出，则返回True。</returns>
+		bool IExportContext.Start()
 		{
-			IEnumerable<ModelMaterial> expr_MaterialSet3 = documentAndMaterialIdToExportedMaterial.Values;
-			Func<ModelMaterial, bool> IsValidTexturePath;
-			if ((IsValidTexturePath = Inner.mIsValidTexturePath) == null)
-			{
-				IsValidTexturePath = (Inner.mIsValidTexturePath = new Func<ModelMaterial, bool>(Inner.tools.IsValidTexturePath));
-			}
 
+			//当前的模型文档和材料ID是，文档与一个无效的ID
+			currentDocumentAndMaterialId = new Tuple<Document, ElementId>(document, ElementId.InvalidElementId);
 
-			foreach (ModelMaterial current in expr_MaterialSet3.Where(IsValidTexturePath))
-			{
-				current.TexturePath = "textures\\" + this.CleanPath(Path.GetFileName(current.TexturePath));
-			}
+			//textureFinder，收集包含材质的文件夹。
+			textureFinder.Init(document);
+
+			//从堆栈中移除所有的元素并向Stack的顶部添加revit文档。
+			documentStack.Clear();
+			documentStack.Push(document);
+
+			//从堆栈中移除所有的元素，并添加新的插入点坐标系。
+			transformationStack.Clear();
+			transformationStack.Push(GetProjectLocationTransform(userSetting.InsertionPoint));
+
+			return true;
 		}
 
 
 		/// <summary>
-		/// 通过构建委托函数获得ExportedMaterial中的贴图路径做迭代器的选择函数判断路径非空。
-		/// 并定义导出材质的文件夹并将贴图放进这个文件夹。
+		/// 标记要导出的3D视图的开始。
 		/// </summary>
-		/// <param name="documentAndMaterialIdToExportedMaterial">欲导出材质的revit文档及材质ID</param>
-		private void CollectTextures(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial)
+		/// <param name="node">与视图关联的几何节点。</param>
+		/// <returns>如果要跳过导出此视图，则返回RenderNodeAction.Skip，否则返回RenderNodeAction.Proceed。</returns>
+		RenderNodeAction IExportContext.OnViewBegin(ViewNode node)
 		{
-			//将导出材质的文档和材质ID赋值给迭代器。
-			IEnumerable<ModelMaterial> expr_MaterialSet = documentAndMaterialIdToExportedMaterial.Values;
-			//定义一个委托 in 为 ExportedMaterial, out为 string。
-			Func<ModelMaterial, string> TexturePath1;
-			//这里是委托函数，若内部类定义的Func为空，就new 一个func并将内部类中getGetTexturePath1方法作为参数传递给func形成委托函数调用，之后赋值给
-			//内部类中的变量和此方法内部变量。
-			if ((TexturePath1 = Inner.TexturePath1) == null)
-			{
-				//把委托作为参数
-				TexturePath1 = Inner.TexturePath1 = new Func<ModelMaterial, string>(Inner.tools.GetTexturePath1);
-			}
-			//检查元素是否为空。
-			//使用Ienumerable.select() 吧定义好从导出材质获取贴图路径的委托方法作为参数传递。并排序，获取元素个数，判读是否为空。若为空，结束本函数。
-			if (expr_MaterialSet.Select(TexturePath1).Distinct<string>().Count<string>() == 0)
-			{
-				return;
-			}
-			
-			
-			//定义导出材质贴图路径的文件夹并保存在text变量中。
-			string text = Path.GetDirectoryName(this.exportingOptions.FilePath) + "\\textures";
-			try
-			{
-				//尝试创建材质贴图文件夹textures。
-				Directory.CreateDirectory(text);
-			}
-			catch (Exception)
-			{
-			}
-
-
-
-			//引用委托函数。
-			IEnumerable<ModelMaterial> expr_MaterialSet2 = documentAndMaterialIdToExportedMaterial.Values;
-			Func<ModelMaterial, string> TexturePath2;
-			if ((TexturePath2 = Inner.TexturePath2) == null)
-			{
-				TexturePath2 = (Inner.TexturePath2 = new Func<ModelMaterial, string>(Inner.tools.GetTexturePath2));
-			}
-			//迭代非重复贴图路径集合。若不为空就把贴图文件夹所在绝对路径加上格式化后的文件名及后缀。
-			foreach (string current in expr_MaterialSet2.Select(TexturePath2).Distinct())
-			{
-				if (!(current == ""))
-				{
-					string text2 = text + "\\" + CleanPath(Path.GetFileName(current));
-
-					//若指定文件text2不存在,那么就尝试将current中的文件复制到text2中。
-					if (!File.Exists(text2))
-					{
-						try
-						{
-							File.Copy(current, text2);
-						}
-						catch (Exception)
-						{
-						}
-					}
-				}
-			}
+			node.LevelOfDetail = this.userSetting.LevelOfDetail;
+			return RenderNodeAction.Proceed;
 		}
 
+
+
+		/// <summary>
+		/// 标记要导出的元素的开始。
+		/// </summary>
+		/// <param name="elementId">即将处理的元素的ID。</param>
+		/// <returns>如果要跳过导出此元素，请返回RenderNodeAction.Skip，否则返回RenderNodeAction.Proceed。</returns>
+		RenderNodeAction IExportContext.OnElementBegin(ElementId elementId)
+		{
+			this.elementStack.Push(elementId);
+			Element element = this.documentStack.Peek().GetElement(elementId);
+			if (element != null)
+			{
+				if (this.userSetting.SkipInteriorDetails && this.IsElementInInteriorCategory(element))
+				{
+					return RenderNodeAction.Skip;
+				}
+				this.isElementDoubleSided = false;
+				if (this.IsElementInDoubleSidedCategory(element))
+				{
+					this.isElementDoubleSided = true;
+				}
+				if (element is FamilyInstance && this.userSetting.GeometryOptimization)
+				{
+					this.ExportSolids(element);
+					return RenderNodeAction.Skip;
+				}
+				if (this.IsElementStructural(element))
+				{
+					this.ExportSolids(element);
+					return RenderNodeAction.Skip;
+				}
+				if (this.IsElementDecal(element))
+				{
+					this.ExportDecal(element);
+					return RenderNodeAction.Skip;
+				}
+			}
+			return RenderNodeAction.Proceed;
+		}
+
+
+		/// <summary>
+		/// 标志着材料的变化。
+		/// </summary>
+		/// <param name="node">描述当前材料的节点。</param>
+		void IExportContext.OnMaterial(MaterialNode node)
+		{
+			this.ChangeCurrentMaterial(new Tuple<Document, ElementId>(this.documentStack.Peek(), node.MaterialId));
+		}
+
+
+		/// <summary>
+		/// 标记要导出的Face的开始。
+		/// </summary>
+		/// <param name="node">表示面的输出节点。</param>
+		/// <returns>返回RenderNodeAction。 如果希望接收此面的几何图形（多边形），请继续，否则返回RenderNodeAction.Skip。</returns>
+		RenderNodeAction IExportContext.OnFaceBegin(FaceNode node)
+		{
+			return RenderNodeAction.Proceed;
+		}
+
+
+		/// <summary>
+		/// 当输出3d面的镶嵌多边形时，将调用此方法。
+		/// </summary>
+		/// <param name="polymesh">表示多边形网格拓扑的节点</param>
+		void IExportContext.OnPolymesh(PolymeshTopology polymesh)
+		{
+			ModelGeometry exportedGeometry = new ModelGeometry();
+			exportedGeometry.Points = polymesh.GetPoints();
+			exportedGeometry.Normals = polymesh.GetNormals();
+			exportedGeometry.Uvs = polymesh.GetUVs();
+			exportedGeometry.Transform = this.transformationStack.Peek();
+			exportedGeometry.DistributionOfNormals = polymesh.DistributionOfNormals;
+			exportedGeometry.Indices = new List<int>(polymesh.GetFacets().Count * 3);
+			if (exportedGeometry.Transform.IsConformal && exportedGeometry.Transform.HasReflection)
+			{
+				using (IEnumerator<PolymeshFacet> enumerator = polymesh.GetFacets().GetEnumerator())
+				{
+					while (enumerator.MoveNext())
+					{
+						PolymeshFacet current = enumerator.Current;
+						exportedGeometry.Indices.Add(current.V1);
+						exportedGeometry.Indices.Add(current.V3);
+						exportedGeometry.Indices.Add(current.V2);
+					}
+					goto IL_131;
+				}
+			}
+			foreach (PolymeshFacet current2 in polymesh.GetFacets())
+			{
+				exportedGeometry.Indices.Add(current2.V1);
+				exportedGeometry.Indices.Add(current2.V2);
+				exportedGeometry.Indices.Add(current2.V3);
+			}
+			IL_131:
+			if (this.isElementDoubleSided)
+			{
+				exportedGeometry.MakeDoubleSided();
+			}
+			this.documentAndMaterialIdToGeometries[this.currentDocumentAndMaterialId].Add(exportedGeometry);
+		}
+
+
+		/// <summary>
+		/// 标记要导出的当前面的末端。
+		/// </summary>
+		/// <param name="node">表示面的输出节点。</param>
+		void IExportContext.OnFaceEnd(FaceNode node)
+		{
+
+		}
+
+
+		/// <summary>
+		/// 在处理完所有实体之后（或取消处理之后），在导出过程的最后将调用此方法。
+		/// </summary>
+		void IExportContext.Finish()
+		{
+			if (documentAndMaterialIdToGeometries.Count > 0)
+			{
+				//导出材质的文档和材质ID
+				Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial = ExportMaterials();
+
+				//判断是否已经完成CollectTextures（纹理收集）
+				if (userSetting.CollectTextures)
+				{
+					//定义导出材质的文件夹并将贴图放进这个文件夹。//确保路径是绝对路径
+					textureFinder.CollectTextures(documentAndMaterialIdToExportedMaterial, userSetting);
+					textureFinder.MakeTexturePathsRelative(documentAndMaterialIdToExportedMaterial, userSetting);
+				}
+
+				//TODO collada
+				new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(userSetting.FilePath);
+				//new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
+				documentAndMaterialIdToGeometries.Clear();
+				ChangeCurrentMaterial(currentDocumentAndMaterialId);
+			}
+			textureFinder.Clear();
+		}
+
+
+
+		/// <summary>
+		/// 在每个元素的开头都会查询此方法。
+		/// </summary>
+		/// <returns>如果您希望取消导出，则返回True，否则返回False。</returns>
+		bool IExportContext.IsCanceled()
+		{
+			return isCancelled;
+		}
+
+
+		/// <summary>
+		/// 标记要导出的3D视图的结束。
+		/// </summary>
+		/// <param name="elementId">刚刚处理过的3D视图的ID。</param>
+		void IExportContext.OnViewEnd(ElementId elementId)
+		{
+			throw new NotImplementedException();
+		}
+
+
+		/// <summary>
+		/// 标记要导出的元素的结尾。
+		/// </summary>
+		/// <param name="elementId">刚刚处理过的元素的ID。</param>
+		void IExportContext.OnElementEnd(ElementId elementId)
+		{
+			this.elementStack.Pop();
+		}
+
+
+
+		/// <summary>
+		/// 标记了要导出的族实例的开始。
+		/// </summary>
+		/// <param name="node"></param>
+		/// <returns></returns>
+		RenderNodeAction IExportContext.OnInstanceBegin(InstanceNode node)
+		{
+			this.transformationStack.Push(this.transformationStack.Peek().Multiply(node.GetTransform()));
+			return RenderNodeAction.Proceed;
+		}
+
+
+		/// <summary>
+		/// 标志着要导出的族实例的结尾。
+		/// </summary>
+		/// <param name="node"></param>
+		void IExportContext.OnInstanceEnd(InstanceNode node)
+		{
+			this.transformationStack.Pop();
+		}
+
+
+		/// <summary>
+		/// 标记要导出的链接实例的开始。
+		/// </summary>
+		/// <param name="node">表示Revit链接的输出节点。</param>
+		/// <returns>如果您希望跳过处理此链接实例，则返回RenderNodeAction.Skip，否则返回RenderNodeAction.Proceed。</returns>
+		RenderNodeAction IExportContext.OnLinkBegin(LinkNode node)
+		{
+
+			this.documentStack.Push(node.GetDocument());
+			this.transformationStack.Push(this.transformationStack.Peek().Multiply(node.GetTransform()));
+			return RenderNodeAction.Proceed;
+		}
+
+
+		/// <summary>
+		/// 标记要导出的链接实例的结尾。
+		/// </summary>
+		/// <param name="node">表示Revit链接的输出节点。</param>
+		void IExportContext.OnLinkEnd(LinkNode node)
+		{
+			this.documentStack.Pop();
+			this.transformationStack.Pop();
+		}
+
+
+		/// <summary>
+		/// 标志着RPC对象导出的开始。RPC（Remote Procedure Call Protocol）远程过程调用协议，
+		/// 它是一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议。
+		/// 简言之，RPC使得程序能够像访问本地系统资源一样，去访问远端系统资源。
+		/// </summary>
+		/// <param name="node">具有有关RPC对象的资产信息的节点。</param>
+		void IExportContext.OnRPC(RPCNode node)
+		{
+			throw new NotImplementedException();
+		}
+
+
+		/// <summary>
+		/// 标记了已启用渲染的灯光的开始输出。
+		/// 仅对照片渲染导出（实现Autodesk.Revit.DB.IPhotoRenderContext的自定义导出器）调用此方法。
+		/// </summary>
+		/// <param name="node">描述灯光对象的节点。</param>
+		void IExportContext.OnLight(LightNode node)
+		{
+			throw new NotImplementedException();
+		}
+
+
+
+		#region  内部方法
 		private Transform GetProjectLocationTransform(int insertionPoint)
 		{
 			Transform transform = Transform.Identity;
@@ -322,74 +431,6 @@ namespace ExportDAE
 			}
 			return dictionary;
 		}
-		
-
-		/// <summary>
-		/// 重新编码整理名字
-		/// </summary>
-		/// <param name="name"></param>
-		/// <returns></returns>
-		private string CleanName(string name)
-		{
-			string text;
-			if (exportingOptions.UnicodeSupport)
-			{
-				byte[] utf16Bytes = Utf16Encoder.GetBytes(name);
-				text = Utf16Encoder.GetString(utf16Bytes);
-			}
-			else
-			{
-				byte[] asciiBytes = usAsciiEncoder.GetBytes(name);
-				text = usAsciiEncoder.GetString(asciiBytes);
-			}
-			IEnumerable<char> char_set = text;
-			Func<char, bool> IsSADM; //S：空格、A：字母、D：数字、M：标点符号。
-			if ((IsSADM = Inner.IsChar1) == null)
-			{
-				IsSADM = Inner.IsChar1 = new Func<char, bool>(Inner.tools.IsSADM);
-			}
-			text = new string(char_set.Where(IsSADM).ToArray());
-			return SecurityElement.Escape(text);
-		}
-
-
-
-		/// <summary>
-		/// 根据用户设置，格式化字符串为Unicode或者ASCII编码。并筛选符合条件的字符串返回。
-		/// </summary>
-		/// <param name="name"></param>
-		/// <returns></returns>
-		private string CleanPath(string name)
-		{
-
-			//string 类型名为@string的变量,目的是防止与string重名。
-			string @string;
-			//如果用户选择支持Unicode编码，那么将传入的字符串通过Utf16Encoder得到Utf16编码的字符串保存在@string中。
-			if (exportingOptions.UnicodeSupport)
-			{
-				byte[] bytes = Utf16Encoder.GetBytes(name);
-				@string = Utf16Encoder.GetString(bytes);
-			}
-			//否者使用ASCII编码。
-			else
-			{
-				byte[] bytes2 = usAsciiEncoder.GetBytes(name);
-				@string = usAsciiEncoder.GetString(bytes2);
-			}
-			//将编码为特定格式的字符串赋值给字符类型的枚举。
-			IEnumerable<char> char_set = @string;
-
-			//创建判断字符是否否和特定要求的委托方法
-			Func<char, bool> IsSADS;//S：空格、A：字母、D：数字、S：特殊标点符号。
-			if ((IsSADS = Inner.IsChar2) == null)
-			{
-				IsSADS = Inner.IsChar2 = new Func<char, bool>(Inner.tools.IsSADS);
-			}
-
-			//筛选一个表中有没有满足条件的数据,返回一个字符串。
-			return new string(char_set.Where(IsSADS).ToArray());
-		}
-
 
 
 		private ModelMaterial ExportMaterial(Tuple<Document, ElementId> documentAndMaterialId)
@@ -400,7 +441,7 @@ namespace ExportDAE
 			Material material = item.GetElement(item2) as Material;
 			if (material != null && material.IsValidObject)
 			{
-				exportedMaterial.Name = CleanName(material.Name);
+				exportedMaterial.Name = textureFinder.CleanName(material.Name, userSetting);
 				if (material.Color.IsValid)
 				{
 					exportedMaterial.Color = System.Drawing.Color.FromArgb(material.Color.Red, material.Color.Green, material.Color.Blue);
@@ -434,31 +475,25 @@ namespace ExportDAE
 			return exportedMaterial;
 		}
 
+
 		private ModelMaterial ExportDecalMaterial(ElementId decalMaterialId)
 		{
 			return new ModelMaterial
 			{
-				Name = CleanName(decalMaterialIdToDecal[decalMaterialId].Name),
+				Name = textureFinder.CleanName(decalMaterialIdToDecal[decalMaterialId].Name, userSetting),
 				TexturePath = textureFinder.FindDiffuseTextureDecal(decalMaterialIdToDecal[decalMaterialId])
 			};
 		}
 
 
-
-
-
-
-
-
-
-
 		private void ExportSolids(Element element)
 		{
-			foreach (GeometryObject current in element.get_Geometry(this.geometryOptions))
+			foreach (GeometryObject current in element.get_Geometry(this.Geometry_Options))
 			{
 				this.ExportGeometryObject(current);
 			}
 		}
+
 
 		private void ExportGeometryObject(GeometryObject geometryObject)
 		{
@@ -501,10 +536,11 @@ namespace ExportDAE
 			}
 		}
 
+
 		private void ExportSolid(Solid solid)
 		{
 			SolidOrShellTessellationControls solidOrShellTessellationControls = new SolidOrShellTessellationControls();
-			solidOrShellTessellationControls.LevelOfDetail=(double)this.exportingOptions.LevelOfDetail / 30.0;
+			solidOrShellTessellationControls.LevelOfDetail = (double)this.userSetting.LevelOfDetail / 30.0;
 			solidOrShellTessellationControls.Accuracy = 0.1;
 			solidOrShellTessellationControls.MinAngleInTriangle = 0.0001;
 			solidOrShellTessellationControls.MinExternalAngleBetweenTriangles = 1.0;
@@ -543,13 +579,14 @@ namespace ExportDAE
 			}
 		}
 
+
 		private void ExportSolid2(Solid solid)
 		{
 			foreach (Face face in solid.Faces)
 			{
 				if (!(face == null))
 				{
-					Mesh mesh = face.Triangulate(exportingOptions.LevelOfDetail / 15.0);
+					Mesh mesh = face.Triangulate(userSetting.LevelOfDetail / 15.0);
 					if (!(mesh == null) && !mesh.Visibility.Equals(3))
 					{
 						ModelGeometry exportedGeometry = new ModelGeometry();
@@ -591,7 +628,8 @@ namespace ExportDAE
 				}
 			}
 		}
-		//TODO 这里需要整改优化
+
+
 		public bool IsElementDecal(Element element)
 		{
 			try
@@ -599,15 +637,15 @@ namespace ExportDAE
 				ElementId typeId = element.GetTypeId();
 				ElementType E = documentStack.Peek().GetElement(typeId) as ElementType;
 
-                //获取与元素引用的外部文件有关的信息。该对象引用的外部文件的类型。
-                if(E != null)
-                {
+				//获取与元素引用的外部文件有关的信息。该对象引用的外部文件的类型。
+				if (E != null)
+				{
 					if (E.GetExternalFileReference().ExternalFileReferenceType == ExternalFileReferenceType.Decal)
 					{
 						return true;
 					}
 				}
-				
+
 			}
 			catch (Exception)
 			{
@@ -616,9 +654,10 @@ namespace ExportDAE
 			return false;
 		}
 
+
 		public bool IsDecalCurved(Element element)
 		{
-			GeometryElement source = element.get_Geometry(this.geometryOptions);
+			GeometryElement source = element.get_Geometry(this.Geometry_Options);
 			try
 			{
 				if (source.ToArray()[1].GetType() == typeof(Arc) && source.ToArray()[3].GetType() == typeof(Arc))
@@ -632,6 +671,7 @@ namespace ExportDAE
 			return false;
 		}
 
+
 		private void ExportDecal(Element element)
 		{
 			if (IsDecalCurved(element))
@@ -642,11 +682,12 @@ namespace ExportDAE
 			ExportDecalFlat(element);
 		}
 
+
 		private void ExportDecalFlat(Element element)
 		{
 			ModelGeometry exportedGeometry = new ModelGeometry();
 			exportedGeometry.Transform = transformationStack.Peek();
-			GeometryElement arg_2F_0 = element.get_Geometry(this.geometryOptions);
+			GeometryElement arg_2F_0 = element.get_Geometry(this.Geometry_Options);
 			exportedGeometry.Points = new List<XYZ>(4);
 			using (IEnumerator<GeometryObject> enumerator = arg_2F_0.GetEnumerator())
 			{
@@ -690,11 +731,12 @@ namespace ExportDAE
 			this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 		}
 
+
 		private void ExportDecalCurved(Element element)
 		{
 			ModelGeometry exportedGeometry = new ModelGeometry();
 			exportedGeometry.Transform = this.transformationStack.Peek();
-			GeometryElement expr_23 = element.get_Geometry(this.geometryOptions);
+			GeometryElement expr_23 = element.get_Geometry(this.Geometry_Options);
 			Arc arc = expr_23.ToArray()[1] as Arc;
 			Curve arg_49_0 = expr_23.ToArray()[3] as Arc;
 			XYZ[] array = arc.Tessellate().ToArray<XYZ>();
@@ -731,11 +773,14 @@ namespace ExportDAE
 			this.ChangeCurrentMaterial(tuple);
 			this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 		}
+
+
 		private bool IsElementSmallerThan(Element element, double size)
 		{
-			BoundingBoxXYZ boundingBoxXYZ = element.get_BoundingBox(this.exportingOptions.MainView3D);
+			BoundingBoxXYZ boundingBoxXYZ = element.get_BoundingBox(this.userSetting.MainView3D);
 			return boundingBoxXYZ != null && boundingBoxXYZ.Enabled && (boundingBoxXYZ.Max - boundingBoxXYZ.Min).GetLength() < size;
 		}
+
 
 		private bool IsElementStructural(Element element)
 		{
@@ -743,11 +788,13 @@ namespace ExportDAE
 			return category != null && (category.Id.IntegerValue.Equals(-2001320) || category.Id.IntegerValue.Equals(-2000175) || category.Id.IntegerValue.Equals(-2000017) || category.Id.IntegerValue.Equals(-2000018) || category.Id.IntegerValue.Equals(-2000019) || category.Id.IntegerValue.Equals(-2000020) || category.Id.IntegerValue.Equals(-2000126));
 		}
 
+
 		private bool IsElementInInteriorCategory(Element element)
 		{
 			Category category = element.Category;
 			return category != null && (category.Id.IntegerValue.Equals(-2000080) || category.Id.IntegerValue.Equals(-2001000) || category.Id.IntegerValue.Equals(-2001040) || category.Id.IntegerValue.Equals(-2001060) || category.Id.IntegerValue.Equals(-2001100) || category.Id.IntegerValue.Equals(-2001140) || category.Id.IntegerValue.Equals(-2001160) || category.Id.IntegerValue.Equals(-2001350) || category.Id.IntegerValue.Equals(-2008013) || category.Id.IntegerValue.Equals(-2008075) || category.Id.IntegerValue.Equals(-2008077) || category.Id.IntegerValue.Equals(-2008079) || category.Id.IntegerValue.Equals(-2008081) || category.Id.IntegerValue.Equals(-2008085) || category.Id.IntegerValue.Equals(-2008083) || category.Id.IntegerValue.Equals(-2008087) || category.Id.IntegerValue.Equals(-2000151) || category.Id.IntegerValue.Equals(-2001120));
 		}
+
 
 		private bool IsElementInDraftCategory(Element element)
 		{
@@ -765,6 +812,7 @@ namespace ExportDAE
 			}
 			return false;
 		}
+
 
 		private bool IsElementInDoubleSidedCategory(Element element)
 		{
@@ -787,118 +835,6 @@ namespace ExportDAE
 
 
 
-		/// <summary>
-		/// 如果您希望取消导出，则返回True，否则返回False。
-		/// </summary>
-		/// <returns></returns>
-		public bool IsCanceled()
-        {
-			return isCancelled;
-		}
-
-        public RenderNodeAction OnViewBegin(ViewNode node)
-        {
-			node.LevelOfDetail = this.exportingOptions.LevelOfDetail;
-			return 0;
-		}
-
-        public void OnViewEnd(ElementId elementId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnElementEnd(ElementId elementId)
-        {
-			this.elementStack.Pop();
-		}
-
-        public RenderNodeAction OnInstanceBegin(InstanceNode node)
-        {
-			this.transformationStack.Push(this.transformationStack.Peek().Multiply(node.GetTransform()));
-			return 0;
-		}
-
-        public void OnInstanceEnd(InstanceNode node)
-        {
-			this.transformationStack.Pop();
-		}
-
-        public RenderNodeAction OnLinkBegin(LinkNode node)
-        {
-
-			this.documentStack.Push(node.GetDocument());
-			this.transformationStack.Push(this.transformationStack.Peek().Multiply(node.GetTransform()));
-			return 0;
-		}
-
-        public void OnLinkEnd(LinkNode node)
-        {
-			this.documentStack.Pop();
-			this.transformationStack.Pop();
-		}
-
-        public RenderNodeAction OnFaceBegin(FaceNode node)
-        {
-			return 0;
-		}
-
-        public void OnFaceEnd(FaceNode node)
-        {
-            
-        }
-
-        public void OnRPC(RPCNode node)
-        {
-           
-        }
-
-        public void OnLight(LightNode node)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnMaterial(MaterialNode node)
-        {
-			this.ChangeCurrentMaterial(new Tuple<Document, ElementId>(this.documentStack.Peek(), node.MaterialId));
-		}
-
-        public void OnPolymesh(PolymeshTopology polymesh)
-        {
-			ModelGeometry exportedGeometry = new ModelGeometry();
-			exportedGeometry.Points = polymesh.GetPoints();
-			exportedGeometry.Normals = polymesh.GetNormals();
-			exportedGeometry.Uvs = polymesh.GetUVs();
-			exportedGeometry.Transform = this.transformationStack.Peek();
-			exportedGeometry.DistributionOfNormals = polymesh.DistributionOfNormals;
-			exportedGeometry.Indices = new List<int>(polymesh.GetFacets().Count * 3);
-			if (exportedGeometry.Transform.IsConformal && exportedGeometry.Transform.HasReflection)
-			{
-				using (IEnumerator<PolymeshFacet> enumerator = polymesh.GetFacets().GetEnumerator())
-				{
-					while (enumerator.MoveNext())
-					{
-						PolymeshFacet current = enumerator.Current;
-						exportedGeometry.Indices.Add(current.V1);
-						exportedGeometry.Indices.Add(current.V3);
-						exportedGeometry.Indices.Add(current.V2);
-					}
-					goto IL_131;
-				}
-			}
-			foreach (PolymeshFacet current2 in polymesh.GetFacets())
-			{
-				exportedGeometry.Indices.Add(current2.V1);
-				exportedGeometry.Indices.Add(current2.V2);
-				exportedGeometry.Indices.Add(current2.V3);
-			}
-			IL_131:
-			if (this.isElementDoubleSided)
-			{
-				exportedGeometry.MakeDoubleSided();
-			}
-			this.documentAndMaterialIdToGeometries[this.currentDocumentAndMaterialId].Add(exportedGeometry);
-		}
-
 		private void ChangeCurrentMaterial(Tuple<Document, ElementId> documentAndMaterialId)
 		{
 			this.currentDocumentAndMaterialId = documentAndMaterialId;
@@ -908,44 +844,7 @@ namespace ExportDAE
 			}
 		}
 
-		public RenderNodeAction OnElementBegin(ElementId elementId)
-		{
-			this.elementStack.Push(elementId);
-			Element element = this.documentStack.Peek().GetElement(elementId);
-			if (element != null)
-			{
-				if (this.exportingOptions.SkipInteriorDetails && this.IsElementInInteriorCategory(element))
-				{
-					return RenderNodeAction.Skip;
-				}
-				this.isElementDoubleSided = false;
-				if (this.IsElementInDoubleSidedCategory(element))
-				{
-					this.isElementDoubleSided = true;
-				}
-				if (element is FamilyInstance && this.exportingOptions.GeometryOptimization)
-				{
-					this.ExportSolids(element);
-					return RenderNodeAction.Skip;
-				}
-				if (this.IsElementStructural(element))
-				{
-					this.ExportSolids(element);
-					return RenderNodeAction.Skip;
-				}
-				if (this.IsElementDecal(element))
-				{
-					this.ExportDecal(element);
-					return RenderNodeAction.Skip;
-				}
-			}
-			return 0;
-		}
+		#endregion
 	}
 
 }
-
-
-
-
-

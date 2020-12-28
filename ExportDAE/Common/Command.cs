@@ -70,7 +70,7 @@ namespace ExportDAE
 			CustomExporter customExporter = new CustomExporter(document, myExportContext)
 			{
 				IncludeGeometricObjects = false,
-				ShouldStopOnError = false
+				ShouldStopOnError = false	//导出过程中遇到错误停止还是继续
 			};
 
 			//使用CustomExporter导出模型。
