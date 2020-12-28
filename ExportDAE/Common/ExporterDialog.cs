@@ -55,13 +55,13 @@ namespace ExportDAE
 		public ExporterDialog()
 		{
 			InitializeComponent();
-            InsertionPoint.SelectedIndex = DataAccessor.InsertionPoint;
-            SkipSmallerThan.Value = DataAccessor.SkipSmallerThan;
-            SkipInteriorDetails.Checked = DataAccessor.SkipInteriorDetails;
-            CollectTextures.Checked = DataAccessor.CollectTextures;
-            UnicodeSupport.Checked = DataAccessor.UnicodeSupport;
-            GeometryOptimization.Checked = DataAccessor.GeometryOptimization;
-            levelOfDetail.Value = DataAccessor.levelOfDetail;
+            InsertionPoint.SelectedIndex = WriteRuntime.InsertionPoint;
+            SkipSmallerThan.Value = WriteRuntime.SkipSmallerThan;
+            SkipInteriorDetails.Checked = WriteRuntime.SkipInteriorDetails;
+            CollectTextures.Checked = WriteRuntime.CollectTextures;
+            UnicodeSupport.Checked = WriteRuntime.UnicodeSupport;
+            GeometryOptimization.Checked = WriteRuntime.GeometryOptimization;
+            levelOfDetail.Value = WriteRuntime.levelOfDetail;
 		}
 
 
@@ -75,13 +75,13 @@ namespace ExportDAE
 			}
 
             //TODO 设置一个工具类来全局存储访问这些数据，保存这些值是为了下一次打开软件还是上一次的设置，避免重复设置。
-            DataAccessor.InsertionPoint = InsertionPoint.SelectedIndex;
-            DataAccessor.SkipSmallerThan = SkipSmallerThan.Value;
-            DataAccessor.SkipInteriorDetails = SkipInteriorDetails.Checked;
-            DataAccessor.CollectTextures = CollectTextures.Checked;
-            DataAccessor.UnicodeSupport = UnicodeSupport.Checked;
-            DataAccessor.GeometryOptimization = GeometryOptimization.Checked;
-            DataAccessor.levelOfDetail = levelOfDetail.Value;
+            WriteRuntime.InsertionPoint = InsertionPoint.SelectedIndex;
+            WriteRuntime.SkipSmallerThan = SkipSmallerThan.Value;
+            WriteRuntime.SkipInteriorDetails = SkipInteriorDetails.Checked;
+            WriteRuntime.CollectTextures = CollectTextures.Checked;
+            WriteRuntime.UnicodeSupport = UnicodeSupport.Checked;
+            WriteRuntime.GeometryOptimization = GeometryOptimization.Checked;
+            WriteRuntime.levelOfDetail = levelOfDetail.Value;
         }
 
 		private void levelOfDetail_ValueChanged(object sender, EventArgs e)

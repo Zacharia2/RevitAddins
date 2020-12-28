@@ -1,13 +1,9 @@
-﻿using System;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using System.Reflection;
-using Collada141;
-using System.Drawing;
 using System.Windows.Media.Imaging;
-using System.Windows.Media;
 using System.IO;
-using System.Drawing.Imaging;
+
 
 namespace ExportDAE
 {
