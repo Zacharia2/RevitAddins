@@ -4,25 +4,92 @@ using Autodesk.Revit.DB.Visual;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Linq;
+using System.Security;
 
 namespace ExportDAE
 {
 	internal class TextureFinder    //纹理查找器
 	{
-		private ICollection<string> textureFolders;
+		#region 内部类
+
+		[CompilerGenerated]
+		[Serializable]
+		private sealed class Inner
+		{
+			public static readonly Inner tools = new Inner();
+			public static Func<ModelMaterial, bool> mIsValidTexturePath;
+			public static Func<ModelMaterial, string> TexturePath1;
+			public static Func<ModelMaterial, string> TexturePath2;
+			public static Func<char, bool> IsChar1;
+			public static Func<char, bool> IsChar2;
+
+
+			/// <summary>
+			/// IsValidTexturePath 判断贴图路径是否为空。
+			/// </summary>
+			internal bool IsValidTexturePath(ModelMaterial m)
+			{
+				return m.TexturePath != string.Empty;
+
+			}
+
+			/// <summary>
+			/// GetTexturePath2 获取贴图路径
+			/// </summary>
+			internal string GetTexturePath1(ModelMaterial o) //GetTexturePath1
+			{
+				return o.TexturePath;
+			}
+
+			/// <summary>
+			/// GetTexturePath2 获取贴图路径
+			/// </summary>
+			internal string GetTexturePath2(ModelMaterial o)
+			{
+				return o.TexturePath;
+			}
+
+			/// <summary>
+			/// IsSADM	 指示指定的 Unicode 字符是否属于空格类别、字母或十进制数字类别、标点符号类别。中的一种。
+			/// </summary>
+			internal bool IsSADM(char c)
+			{
+				return char.IsWhiteSpace(c) || char.IsLetterOrDigit(c) || char.IsPunctuation(c);
+			}
+
+			/// <summary>
+			/// Is2	 指示指定的 Unicode 字符是否属于空格类别、字母或十进制数字类别、'.'、'-'之中的一种。
+			/// </summary>
+			internal bool IsSADS(char c)
+			{
+				return char.IsWhiteSpace(c) || char.IsLetterOrDigit(c) || c == '.' || c == '-';
+			}
+
+		}
+
+		#endregion
+
 		private Document document;
+		private ICollection<string> textureFolders;
+		private static Encoding usAsciiEncoder = Encoding.GetEncoding("us-ascii", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
+		private static Encoding Utf16Encoder = Encoding.GetEncoding("unicode", new EncoderReplacementFallback(string.Empty), new DecoderExceptionFallback());
+		
 
 		public void Init(Document document)
 		{
-			//初始化，获取revit模型
 			this.document = document;
 			CollectTexturesFolders();
 		}
+
 
 		public void Clear()
 		{
 			textureFolders.Clear();
 		}
+
 
 		/// <summary>
 		/// 收集材质纹理文件夹
@@ -261,6 +328,7 @@ namespace ExportDAE
 			}
 		}
 
+
 		private Asset FindTextureAsset(AssetProperty assetProperty)
 		{
 			//查找纹理贴图资源
@@ -304,11 +372,13 @@ namespace ExportDAE
 			return null;
 		}
 
+
 		private bool IsTextureAsset(Asset asset)
 		{
 			AssetProperty assetProprty = GetAssetProprty(asset, "assettype");
 			return (assetProprty != null && (assetProprty as AssetPropertyString).Value == "texture") || this.GetAssetProprty(asset, "unifiedbitmap_Bitmap") != null;
 		}
+
 
 		private AssetProperty GetAssetProprty(Asset asset, string propertyName)
 		{
@@ -368,6 +438,7 @@ namespace ExportDAE
 			return text;
 		}
 
+
 		private string FindTextureInTextureFolders(string file)
 		{
 			//从贴图文件夹中查找贴图
@@ -381,6 +452,7 @@ namespace ExportDAE
 			}
 			return "";
 		}
+
 
 		public string FindDiffuseTextureDecal(Element element)
 		{
@@ -405,6 +477,8 @@ namespace ExportDAE
 			}
 			return "";
 		}
+
+
 
 
 		//以下参考Command类。
@@ -562,6 +636,162 @@ namespace ExportDAE
 				}
 			}
 			return "";
+		}
+
+
+
+
+
+
+		internal void MakeTexturePathsRelative(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial, ExportingOptions options)
+		{
+			IEnumerable<ModelMaterial> expr_MaterialSet3 = documentAndMaterialIdToExportedMaterial.Values;
+			Func<ModelMaterial, bool> IsValidTexturePath;
+			if ((IsValidTexturePath = Inner.mIsValidTexturePath) == null)
+			{
+				IsValidTexturePath = (Inner.mIsValidTexturePath = new Func<ModelMaterial, bool>(Inner.tools.IsValidTexturePath));
+			}
+
+
+			foreach (ModelMaterial current in expr_MaterialSet3.Where(IsValidTexturePath))
+			{
+				current.TexturePath = "textures\\" + this.CleanPath(Path.GetFileName(current.TexturePath), options);
+			}
+		}
+
+
+		/// <summary>
+		/// 通过构建委托函数获得ExportedMaterial中的贴图路径做迭代器的选择函数判断路径非空。
+		/// 并定义导出材质的文件夹并将贴图放进这个文件夹。
+		/// </summary>
+		/// <param name="documentAndMaterialIdToExportedMaterial">欲导出材质的revit文档及材质ID</param>
+		internal void CollectTextures(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial, ExportingOptions options)
+		{
+			//将导出材质的文档和材质ID赋值给迭代器。
+			IEnumerable<ModelMaterial> expr_MaterialSet = documentAndMaterialIdToExportedMaterial.Values;
+			//定义一个委托 in 为 ExportedMaterial, out为 string。
+			Func<ModelMaterial, string> TexturePath1;
+			//这里是委托函数，若内部类定义的Func为空，就new 一个func并将内部类中getGetTexturePath1方法作为参数传递给func形成委托函数调用，之后赋值给
+			//内部类中的变量和此方法内部变量。
+			if ((TexturePath1 = Inner.TexturePath1) == null)
+			{
+				//把委托作为参数
+				TexturePath1 = Inner.TexturePath1 = new Func<ModelMaterial, string>(Inner.tools.GetTexturePath1);
+			}
+			//检查元素是否为空。
+			//使用Ienumerable.select() 吧定义好从导出材质获取贴图路径的委托方法作为参数传递。并排序，获取元素个数，判读是否为空。若为空，结束本函数。
+			if (expr_MaterialSet.Select(TexturePath1).Distinct<string>().Count<string>() == 0)
+			{
+				return;
+			}
+
+
+			//定义导出材质贴图路径的文件夹并保存在text变量中。
+			string text = Path.GetDirectoryName(options.FilePath) + "\\textures";
+			try
+			{
+				//尝试创建材质贴图文件夹textures。
+				Directory.CreateDirectory(text);
+			}
+			catch (Exception)
+			{
+			}
+
+
+
+			//引用委托函数。
+			IEnumerable<ModelMaterial> expr_MaterialSet2 = documentAndMaterialIdToExportedMaterial.Values;
+			Func<ModelMaterial, string> TexturePath2;
+			if ((TexturePath2 = Inner.TexturePath2) == null)
+			{
+				TexturePath2 = (Inner.TexturePath2 = new Func<ModelMaterial, string>(Inner.tools.GetTexturePath2));
+			}
+			//迭代非重复贴图路径集合。若不为空就把贴图文件夹所在绝对路径加上格式化后的文件名及后缀。
+			foreach (string current in expr_MaterialSet2.Select(TexturePath2).Distinct())
+			{
+				if (!(current == ""))
+				{
+					string text2 = text + "\\" + CleanPath(Path.GetFileName(current), options);
+
+					//若指定文件text2不存在,那么就尝试将current中的文件复制到text2中。
+					if (!File.Exists(text2))
+					{
+						try
+						{
+							File.Copy(current, text2);
+						}
+						catch (Exception)
+						{
+						}
+					}
+				}
+			}
+		}
+
+
+		/// <summary>
+		/// 重新编码整理名字
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		internal string CleanName(string name, ExportingOptions options)
+		{
+			string text;
+			if (options.UnicodeSupport)
+			{
+				byte[] utf16Bytes = Utf16Encoder.GetBytes(name);
+				text = Utf16Encoder.GetString(utf16Bytes);
+			}
+			else
+			{
+				byte[] asciiBytes = usAsciiEncoder.GetBytes(name);
+				text = usAsciiEncoder.GetString(asciiBytes);
+			}
+			IEnumerable<char> char_set = text;
+			Func<char, bool> IsSADM; //S：空格、A：字母、D：数字、M：标点符号。
+			if ((IsSADM = Inner.IsChar1) == null)
+			{
+				IsSADM = Inner.IsChar1 = new Func<char, bool>(Inner.tools.IsSADM);
+			}
+			text = new string(char_set.Where(IsSADM).ToArray());
+			return SecurityElement.Escape(text);
+		}
+
+
+		/// <summary>
+		/// 根据用户设置，格式化字符串为Unicode或者ASCII编码。并筛选符合条件的字符串返回。
+		/// </summary>
+		/// <param name="name"></param>
+		/// <returns></returns>
+		internal string CleanPath(string name, ExportingOptions options)
+		{
+
+			//string 类型名为@string的变量,目的是防止与string重名。
+			string @string;
+			//如果用户选择支持Unicode编码，那么将传入的字符串通过Utf16Encoder得到Utf16编码的字符串保存在@string中。
+			if (options.UnicodeSupport)
+			{
+				byte[] bytes = Utf16Encoder.GetBytes(name);
+				@string = Utf16Encoder.GetString(bytes);
+			}
+			//否者使用ASCII编码。
+			else
+			{
+				byte[] bytes2 = usAsciiEncoder.GetBytes(name);
+				@string = usAsciiEncoder.GetString(bytes2);
+			}
+			//将编码为特定格式的字符串赋值给字符类型的枚举。
+			IEnumerable<char> char_set = @string;
+
+			//创建判断字符是否否和特定要求的委托方法
+			Func<char, bool> IsSADS;//S：空格、A：字母、D：数字、S：特殊标点符号。
+			if ((IsSADS = Inner.IsChar2) == null)
+			{
+				IsSADS = Inner.IsChar2 = new Func<char, bool>(Inner.tools.IsSADS);
+			}
+
+			//筛选一个表中有没有满足条件的数据,返回一个字符串。
+			return new string(char_set.Where(IsSADS).ToArray());
 		}
 	}
 }
