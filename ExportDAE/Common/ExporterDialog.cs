@@ -258,11 +258,13 @@ namespace ExportDAE
             // 
             // levelOfDetail
             // 
+            this.levelOfDetail.LargeChange = 3;
             this.levelOfDetail.Location = new System.Drawing.Point(120, 222);
+            this.levelOfDetail.Maximum = 15;
             this.levelOfDetail.Name = "levelOfDetail";
             this.levelOfDetail.Size = new System.Drawing.Size(145, 56);
             this.levelOfDetail.TabIndex = 13;
-            this.levelOfDetail.Value = 5;
+            this.levelOfDetail.Value = 8;
             this.levelOfDetail.ValueChanged += new System.EventHandler(this.levelOfDetail_ValueChanged);
             this.levelOfDetail.DragEnter += new System.Windows.Forms.DragEventHandler(this.levelOfDetail_ValueChanged);
             // 

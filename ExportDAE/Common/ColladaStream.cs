@@ -30,7 +30,14 @@ namespace ExportDAE
                 return item.Normals.Count;
             }
         }
+        /// <summary>
+        /// 文档和材料ID到Geometries
+        /// </summary>
         private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> Geometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
+
+        /// <summary>
+        /// 文档和材料ID到Material
+        /// </summary>
         private Dictionary<Tuple<Document, ElementId>, ModelMaterial> Material = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
         private COLLADA mode = new COLLADA();
         public ColladaStream(Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial, Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries)

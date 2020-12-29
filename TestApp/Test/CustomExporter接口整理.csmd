@@ -1,0 +1,358 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     A class that allows exporting 3D or 2D views via an export context.
+    //     允许通过导出上下文导出3D或2D视图的类。
+    //
+    // 言论：
+        // The Export method of this class triggers standard rendering or exporting process
+        // in Revit, but instead of displaying the result on screen or printer, the output
+        // is channeled through the given custom context that handles processing of the
+        // geometric as well as non-geometric information. Revit will process the exporting
+        // algorithm depending on the type of given context. If an instance of Autodesk.Revit.DB.IPhotoRenderContext
+        // is used, then Revit will output the model as if executing the Render command,
+        // thus only such entities that would be visible in a rendered view will be sent
+        // to the context. Alternatively, if an instance of Autodesk.Revit.DB.IModelExportContext
+        // is used, Revit will output the model as if exporting it to a CAD format, a process
+        // which results outputting also objects that would not appear in a rendered image,
+        // such as model curves and text annotations. For 2D views, an instance of Autodesk.Revit.DB.IExportContext2D
+        // has to be used. Revit will output the contents of the 2D view as it is displayed
+        // on the screen. Export can be modified by setting properties pertaining to 2D
+        // views: Autodesk::Revit::DB::IExportContext2D::Export2DGeometricObjectsIncludingPatternLines,
+        // Autodesk::Revit::DB::IExportContext2D::Export2DIncludingAnnotationObjects. Autodesk::Revit::DB::IExportContext2D::Export2DForceDisplayStyle.
+        // See notes for 2D export in Autodesk::Revit::DB::IExportContextBase and Autodesk.Revit.DB.IExportContext2D.
+        
+        // 此类的Export方法在Revit中触发标准的呈现或导出过程，但不是在屏幕或打印机上显示结果，而是通过给定的自定义上下文引导输出，该上下文处理几何以及非几何信息。 
+        // Revit将根据给定上下文的类型处理导出算法。 如果使用Autodesk.Revit.DB.IPhotoRenderContext的实例，则Revit会像执行Render命令一样输出模型，
+        // 因此，只有在渲染视图中可见的此类实体才会发送到上下文。 
+        // 或者，如果使用了Autodesk.Revit.DB.IModelExportContext实例，则Revit将输出模型，就像将其导出为CAD格式一样，
+        // 该过程将输出还不会出现在渲染图像中的对象，例如模型曲线。 和文字注释。 
+        // 对于2D视图，必须使用Autodesk.Revit.DB.IExportContext2D的实例。  Revit将在屏幕上显示时输出2D视图的内容。 
+        // 可以通过设置与2D视图有关的属性来修改导出：Autodesk :: Revit :: DB :: IExportContext2D :: Export2DGeometricObjectsIn includedPatternLines，Autodesk :: Revit :: DB :: IExportContext2D :: Export2DInclusionAnnotationObjects。  
+        // Autodesk :: Revit :: DB :: IExportContext2D :: Export2DForceDisplayStyle。
+        // 请参见有关在Autodesk :: Revit :: DB :: IExportContextBase和Autodesk.Revit.DB.IExportContext2D中进行2D导出的注释。
+    public class CustomExporter : IDisposable
+    {
+
+
+
+        //
+        // 摘要:
+        //     Constructs a new instance of a CustomExporter for a given document using the
+        //     input instance of IExportContext as the output device.
+        //     使用IExportContext的输入实例作为输出设备，为给定文档构造CustomExporter的新实例。
+        //
+        // 参数:
+        //   document:
+        //     The document containing the model to be exported
+        //     包含要导出的模型的文档
+        //
+        //   context:
+        //     An instance of a context class that will be consuming the output
+        //     上下文类的实例，它将使用输出
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //     非可选参数为NULL
+        //
+        // 言论：
+        //     The input context should be an instance of a class that implements either Autodesk.Revit.DB.IModelExportContext
+        //     or Autodesk.Revit.DB.IPhotoRenderContext interfaces.
+        //     输入上下文应该是实现Autodesk.Revit.DB.IModelExportContext或Autodesk.Revit.DB.IPhotoRenderContext接口的类的实例。
+        public CustomExporter(Document document, IExportContext context);
+
+        ~CustomExporter();
+
+
+
+
+        //
+        // 摘要:
+        //     Specifies whether the .NET object represents a valid Revit entity.
+        //     指定.NET对象是否代表有效的Revit实体。
+        //
+        // 返回结果:
+        //     True if the API object holds a valid Revit native object, false otherwise.
+        //     如果API对象包含有效的Revit本机对象，则为true，否则为false。
+        //
+        // 言论：
+        //     If the corresponding Revit native object is destroyed, or creation of the corresponding
+        //     object is undone, a managed API object containing it is no longer valid. API
+        //     methods cannot be called on invalidated wrapper objects.
+        //     如果相应的Revit本机对象被破坏，或者撤消了相应对象的创建，则包含该对象的托管API对象将不再有效。 
+        //     无法对无效的包装器对象调用API方法。
+        public bool IsValidObject { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     This value tells the exporter of 2D views to force the given display mode for
+        //     the view.
+        //     此值告诉2D视图的导出器强制视图的给定显示模式。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentOutOfRangeException:
+        //     When setting this property: A value passed for an enumeration argument is not
+        //     a member of that enumeration
+        //     设置此属性时：为枚举参数传递的值不是该枚举的成员
+        //
+        // 言论：
+        //     Only DisplayStyle::Wireframe and DisplayStyle::HLR values are supported. Default
+        //     forced value is DisplayStyle::HLR unless the view has DisplayStyle:Wireframe.
+        //     See notes for 2D export for views in non-Wireframe display style in Autodesk::Revit::DB::IExportContextBase
+        //     and Autodesk.Revit.DB.IExportContext2D.
+        //     仅支持DisplayStyle :: Wireframe和DisplayStyle :: HLR值。 除非视图具有DisplayStyle：Wireframe，否则默认强制值为DisplayStyle :: HLR。
+        //     有关Autodesk :: Revit :: DB :: IExportContextBase和Autodesk.Revit.DB.IExportContext2D中非线框显示样式的视图，请参见2D导出说明。
+        public DisplayStyle Export2DForceDisplayStyle { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     This flag sets the exporter of 2D views to either include or exclude output of
+        //     annotation objects when the model is being processed by the export context.
+        //     当导出上下文正在处理模型时，此标志将2D视图的导出器设置为包括或排除注释对象的输出。
+        //
+        // 言论：
+        //     A convenient way of determining whether an element category is annotation is
+        //     using Autodesk::Revit::DB::Category::CategoryType.
+        //     确定元素类别是否为注释的便捷方法是使用Autodesk :: Revit :: DB :: Category :: CategoryType。
+        public bool Export2DIncludingAnnotationObjects { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     This flag sets the exporter of 2D views to either include or exclude output of
+        //     face pattern lines as part of geometric objects when the model is being processed
+        //     by the export context.
+        //     当导出上下文处理模型时，此标志将2D视图的导出器设置为包括或排除作为几何对象一部分的面部图案线的输出。
+        //
+        // 言论：
+        //     This flag is ignored if view has Wireframe display style. This flag is ignored
+        //     unless property "IncludeGeometricObjects" is set to true.
+        //     如果视图具有线框显示样式，则将忽略此标志。 除非属性“ IncludeGeometricObjects”设置为true，否则将忽略此标志。
+        public bool Export2DGeometricObjectsIncludingPatternLines { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     This flag sets the exporter to either include or exclude output of geometric
+        //     objects such as faces and curves when the model is being processed by the export
+        //     context.
+        //     当通过导出上下文处理模型时，此标志将导出器设置为包括或排除几何对象（例如面和曲线）的输出。
+        //
+        // 言论：
+        //     If geometric objects are to be excluded, the context will not receive any of
+        //     the calls to related to Faces or Curves. However, the objects will be still processed
+        //     by Revit resulting in exporting their tessellated geometry in form of polymeshes
+        //     or lines, respectivelly. Regardless of the value of this property, the export
+        //     context must always implement the methods related to receiving of geometric objects
+        //     (e.g. OnFaceStart, OnFaceEnd, OnCurve, etc.), even though the methods may never
+        //     be invoked. Setting this property to False allows clients to significantly speed
+        //     up the export process. If the export context does not need to examine geometric
+        //     objects, it is recommended setting this property to False, which will make the
+        //     export process faster even when compared with export during which notifications
+        //     about geometric objects are sent, but ignored by the context.
+        //     如果要排除几何对象，则上下文将不会收到与“面”或“曲线”有关的任何调用。 
+        //     但是，对象仍将由Revit处理，从而分别以多边形或线条的形式导出其细分的几何形状。 
+        //     无论此属性的值如何，导出上下文都必须始终实现与接收几何对象有关的方法（例如OnFaceStart，OnFaceEnd，OnCurve等），
+        //     即使可能永远不会调用这些方法。 将此属性设置为False可使客户端大大加快导出过程。 
+        //     如果导出上下文不需要检查几何对象，建议将此属性设置为False，即使与发送有关几何对象的通知但被上下文忽略的导出相比，也可以使导出过程更快。
+        public bool IncludeGeometricObjects { get; set; }
+
+
+
+        
+        //
+        // 摘要:
+        //     This flag instructs the exporting process to either stop or continue in case
+        //     an error occurs during any of the exporting methods.
+        //     如果在任何一种导出方法中发生错误，此标志将指示导出过程停止或继续。
+        public bool ShouldStopOnError { get; set; }
+
+        
+
+
+        //
+        // 摘要:
+        //     Checks if view rendering is currently supported in the running instance of Revit.
+        //     检查正在运行的Revit实例当前是否支持视图渲染。
+        //
+        // 返回结果:
+        //     Returns True if rendering is currently supported, False otherwise.
+        //     如果当前支持渲染，则返回True，否则返回False。
+        //
+        // 言论：
+        //     A typical reason for rendering not being enabled is when rendering and material
+        //     libraries are not currently available in the installed copy of Revit.
+        //     无法启用渲染的一个典型原因是渲染和材质库当前在已安装的Revit副本中不可用。
+        public static bool IsRenderingSupported();
+        public sealed override void Dispose();
+
+
+
+
+        //
+        // 摘要:
+        //     Exports a collection of 3D or 2D views
+        //     导出3D或2D视图的集合
+        //
+        // 参数:
+        //   viewIds:
+        //     An array of views to export
+        //     导出的一系列视图
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     One or more elements in viewIds is not a valid exportable view. For example,
+        //     templates are not considered valid views to export.
+        //     viewIds中的一个或多个元素不是有效的可导出视图。 例如，模板不被视为要导出的有效视图。
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //     非可选参数为NULL
+        //
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The instance of IExportContext is not valid. -or- Rendering is currently not
+        //     supported in the running instance of Revit. One reason for that to happen is
+        //     that rendering and material libraries are not currently available.
+        //     IExportContext的实例无效。  -或者-正在运行的Revit实例当前不支持渲染。 发生这种情况的原因之一是渲染库和材质库当前不可用。
+        //
+        // 言论：
+            // Note that the actual export process may differ depending on the type of export
+            // context used. For example, when the Autodesk.Revit.DB.IModelExportContext is
+            // used, Revit is likely to perform several rounds of traversing each view, which
+            // may result in invoking the OnViewBegin/OnViewEnd method multiple times for every
+            // one view. It is because Revit draws objects in several layers (model layer, annotation
+            // layer, etc.) and will traverse each layer individually. In the most common scenario
+            // the user will receive two invocations of OnViewBegin/OnViewEnd: In the first
+            // round, all model entities will be received, while in the second round all text
+            // annotation elements will be received, if any present in the given view. Note
+            // that all views in the collection must be either 3D or 2D views and they must
+            // match the exporter context. Note that currently the only 2D view types exported
+            // are Autodesk.Revit.DB.CustomExporter.IncludeGeometricObjects FloorPlan, CeilingPlan,Elevation,
+            // Section, Detail, EngineeringPlan, AreaPlan.
+            // 请注意，实际的导出过程可能会有所不同，具体取决于所使用的导出上下文的类型。 
+            // 例如，当使用Autodesk.Revit.DB.IModelExportContext时，Revit可能会执行几轮遍历每个视图，
+            // 这可能导致每个视图多次调用OnViewBegin / OnViewEnd方法。 
+            // 这是因为Revit将对象绘制为多个层（模型层，注释层等），并将分别遍历每个层。 
+            // 在最常见的情况下，用户将收到两次OnViewBegin / OnViewEnd调用：在第一轮中，将接收所有模型实体，而在第二轮中，将接收所有文本注释元素（如果给定视图中存在）。 
+            // 请注意，集合中的所有视图都必须是3D或2D视图，并且它们必须与导出器上下文匹配。 
+            // 请注意，当前仅导出的2D视图类型是Autodesk.Revit.DB.CustomExporter.IncludeGeometricObjects FloorPlan，CeilingPlan，Elevation，Section，Detail，EngineeringPlan，AreaPlan。
+        public void Export(IList<ElementId> viewIds);
+
+
+
+
+        //
+        // 摘要:
+        //     Exports one 3D or 2D view
+        //     导出一个3D或2D视图
+        //
+        // 参数:
+        //   view:
+        //     An instance of the view to export
+        //     导出视图的实例
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The view is not exportable, such as a template view or wrong type view, for example.
+        //     该视图不可导出，例如，模板视图或错误的类型视图。
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //     非可选参数为NULL
+        //
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The instance of IExportContext is not valid. -or- Rendering is currently not
+        //     supported in the running instance of Revit. One reason for that to happen is
+        //     that rendering and material libraries are not currently available.
+        //     IExportContext的实例无效。  -或者-正在运行的Revit实例当前不支持渲染。 
+        //     发生这种情况的原因之一是渲染库和材质库当前不可用。
+        //
+        // 言论：
+        //     Note that the actual export process may differ depending on the type of export
+        //     context used. For example, when the Autodesk.Revit.DB.IModelExportContext is
+        //     used, Revit is likely to perform several rounds of traversing each view, which
+        //     may result in invoking the OnViewBegin/OnViewEnd method multiple times for every
+        //     one view. It is because Revit draws objects in several layers (model layer, annotation
+        //     layer, etc.) and will traverse each layer individually. In the most common scenario
+        //     the user will receive two invocations of OnViewBegin/OnViewEnd: In the first
+        //     round, all model entities will be received, while in the second round all text
+        //     annotation elements will be received, if any present in the given view.
+        //     请注意，实际的导出过程可能会有所不同，具体取决于所使用的导出上下文的类型。 
+        //     例如，当使用Autodesk.Revit.DB.IModelExportContext时，Revit可能会执行几轮遍历每个视图，这可能导致每个视图多次调用OnViewBegin / OnViewEnd方法。 
+        //     这是因为Revit将对象绘制为多层（模型层，注释层等），并将分别遍历每一层。 
+        //      在最常见的情况下，用户将收到两次OnViewBegin / OnViewEnd调用：在第一轮中，将接收所有模型实体，而在第二轮中，将接收所有文本注释元素（如果给定视图中存在任何文本注释元素）。
+        public void Export(View view);
+
+
+
+
+        //
+        // 摘要:
+        //     Exports one 3D view
+        //     导出一个3D视图
+        //
+        // 参数:
+        //   view:
+        //     An instance of the 3D view to export
+        //     要导出的3D视图的实例
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The view is not exportable, such as a template view or wrong type view, for example.
+        //     该视图不可导出，例如，模板视图或错误的类型视图。
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //     非可选参数为NULL
+        //
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The instance of IExportContext is not valid. -or- Rendering is currently not
+        //     supported in the running instance of Revit. One reason for that to happen is
+        //     that rendering and material libraries are not currently available.
+        //     IExportContext的实例无效。  -或者-正在运行的Revit实例当前不支持渲染。 发生这种情况的原因之一是渲染库和材质库当前不可用。
+        //
+        // 言论：
+        //     Note that the actual export process may differ depending on the type of export
+        //     context used. For example, when the Autodesk.Revit.DB.IModelExportContext is
+        //     used, Revit is likely to perform several rounds of traversing each view, which
+        //     may result in invoking the OnViewBegin/OnViewEnd method multiple times for every
+        //     one view. It is because Revit draws objects in several layers (model layer, annotation
+        //     layer, etc.) and will traverse each layer individually. In the most common scenario
+        //     the user will receive two invocations of OnViewBegin/OnViewEnd: In the first
+        //     round, all model entities will be received, while in the second round all text
+        //     annotation elements will be received, if any present in the given view.
+        //     请注意，实际的导出过程可能会有所不同，具体取决于所使用的导出上下文的类型。 
+        //     例如，当使用Autodesk.Revit.DB.IModelExportContext时，Revit可能会执行几轮遍历每个视图，这可能导致每个视图多次调用OnViewBegin / OnViewEnd方法。 
+        //     这是因为Revit将对象绘制为多个层（模型层，注释层等），并将分别遍历每个层。
+        //     在最常见的情况下，用户将收到两次OnViewBegin / OnViewEnd调用：在第一轮中，将接收所有模型实体，而在第二轮中，将接收所有文本注释元素（如果给定视图中存在任何文本注释元素）。
+        [Obsolete("This method is deprecated in Revit 2020 and will be removed in the next version of Revit. Use Export(View) instead.")]
+        public void Export(View3D view);
+
+
+
+
+        [HandleProcessCorruptedStateExceptions]
+        protected virtual void Dispose(bool A_0);
+        protected virtual void ReleaseUnmanagedResources(bool disposing);
+    }
+}

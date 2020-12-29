@@ -9,6 +9,7 @@ namespace ExportDAE
 
 	internal class MExportContext : IExportContext
 	{
+	
 		/// <summary>
 		/// 文档
 		/// </summary>
@@ -23,6 +24,10 @@ namespace ExportDAE
 		/// 是否结束导出？默认否。
 		/// </summary>
 		private bool isCancelled = false;
+
+		/// <summary>
+		/// 元素是否是双面？Sided 双面双面材质显示单面的有边的。DoubleSided 材质双面材质材质面板图层背面是否显示
+		/// </summary>
 		private bool isElementDoubleSided;
 
 		/// <summary>
@@ -44,7 +49,7 @@ namespace ExportDAE
 		private Tuple<Document, ElementId> currentDocumentAndMaterialId;
 
 		/// <summary>
-		/// 
+		/// 文档和材料ID到Geometries
 		/// </summary>
 		private Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>> documentAndMaterialIdToGeometries = new Dictionary<Tuple<Document, ElementId>, IList<ModelGeometry>>();
 		private TextureFinder textureFinder;
@@ -127,6 +132,10 @@ namespace ExportDAE
 		/// <returns>如果要跳过导出此视图，则返回RenderNodeAction.Skip，否则返回RenderNodeAction.Proceed。</returns>
 		RenderNodeAction IExportContext.OnViewBegin(ViewNode node)
 		{
+			///视图将呈现的详细程度。
+			/*整数形式，取值范围是[0,15]（含[0,15]）或{-1}。 如果该值为正，则Revit将在细分面时使用建议的细节等级。
+             * 否则，它将使用基于输出分辨率的默认算法。 如果要求明确的细节级别（即正值），
+             * 则使用接近有效范围中间值的值会产生非常合理的细分。  Revit使用级别8作为其“正常” LOD。*/
 			node.LevelOfDetail = this.userSetting.LevelOfDetail;
 			return RenderNodeAction.Proceed;
 		}
@@ -218,7 +227,11 @@ namespace ExportDAE
 						exportedGeometry.Indices.Add(current.V3);
 						exportedGeometry.Indices.Add(current.V2);
 					}
-					goto IL_131;
+					if (this.isElementDoubleSided)
+					{
+						exportedGeometry.MakeDoubleSided();
+					}
+					this.documentAndMaterialIdToGeometries[this.currentDocumentAndMaterialId].Add(exportedGeometry);
 				}
 			}
 			foreach (PolymeshFacet current2 in polymesh.GetFacets())
@@ -227,12 +240,6 @@ namespace ExportDAE
 				exportedGeometry.Indices.Add(current2.V2);
 				exportedGeometry.Indices.Add(current2.V3);
 			}
-			IL_131:
-			if (this.isElementDoubleSided)
-			{
-				exportedGeometry.MakeDoubleSided();
-			}
-			this.documentAndMaterialIdToGeometries[this.currentDocumentAndMaterialId].Add(exportedGeometry);
 		}
 
 
@@ -377,7 +384,15 @@ namespace ExportDAE
 
 
 
-		#region  内部方法
+
+
+
+		#region 设置模型原点
+		/// <summary>
+		/// 设置模型原点
+		/// </summary>
+		/// <param name="insertionPoint">如果是0表示项目基点，非零表示观测点。</param>
+		/// <returns></returns>
 		private Transform GetProjectLocationTransform(int insertionPoint)
 		{
 			Transform transform = Transform.Identity;
@@ -409,12 +424,16 @@ namespace ExportDAE
 			return Transform.CreateTranslation(new XYZ(eastWest, northSouth, elevation)) * transform;
 		}
 
+        #endregion
 
-		/// <summary>
-		/// 将要导出的材质
-		/// </summary>
-		/// <returns>返回字典类型数据</returns>
-		private Dictionary<Tuple<Document, ElementId>, ModelMaterial> ExportMaterials()
+
+
+        #region 材质处理
+        /// <summary>
+        /// 将要导出的材质
+        /// </summary>
+        /// <returns>返回字典类型数据</returns>
+        private Dictionary<Tuple<Document, ElementId>, ModelMaterial> ExportMaterials()
 		{
 			Dictionary<Tuple<Document, ElementId>, ModelMaterial> dictionary = new Dictionary<Tuple<Document, ElementId>, ModelMaterial>();
 			foreach (Tuple<Document, ElementId> current in documentAndMaterialIdToGeometries.Keys)
@@ -486,7 +505,27 @@ namespace ExportDAE
 		}
 
 
-		private void ExportSolids(Element element)
+
+		private void ChangeCurrentMaterial(Tuple<Document, ElementId> documentAndMaterialId)
+		{
+			this.currentDocumentAndMaterialId = documentAndMaterialId;
+			if (!this.documentAndMaterialIdToGeometries.ContainsKey(this.currentDocumentAndMaterialId))
+			{
+				this.documentAndMaterialIdToGeometries.Add(this.currentDocumentAndMaterialId, new List<ModelGeometry>(100));
+			}
+		}
+
+        #endregion
+
+
+
+        #region 导出实体Solids
+        /// <summary>
+        /// 体 - Solid::::
+        /// 一个 Solid 是由 Face 和 Edge 来定义它边界的实体。
+        /// </summary>
+        /// <param name="element"></param>
+        private void ExportSolids(Element element)
 		{
 			foreach (GeometryObject current in element.get_Geometry(this.Geometry_Options))
 			{
@@ -497,20 +536,19 @@ namespace ExportDAE
 
 		private void ExportGeometryObject(GeometryObject geometryObject)
 		{
-			if (geometryObject == null)
+			if (geometryObject.Equals(null))
 			{
 				return;
 			}
-			/*if (geometryObject.Visibility != null)
-			{
-				return;
-			}*/
-			GraphicsStyle graphicsStyle = documentStack.Peek().GetElement(geometryObject.GraphicsStyleId) as GraphicsStyle;
-			if (graphicsStyle != null && graphicsStyle.Name.Contains("Light Source"))
-			{
-				return;
-			}
-			GeometryInstance geometryInstance = geometryObject as GeometryInstance;
+            if (geometryObject.Visibility.Equals(Visibility.Invisible))
+            {
+                return;
+            }
+            if (documentStack.Peek().GetElement(geometryObject.GraphicsStyleId) is GraphicsStyle graphicsStyle && graphicsStyle.Name.Contains("Light Source"))
+            {
+                return;
+            }
+            GeometryInstance geometryInstance = geometryObject as GeometryInstance;
 			if (geometryInstance != null)
 			{
 				this.transformationStack.Push(this.transformationStack.Peek().Multiply(geometryInstance.Transform));
@@ -537,7 +575,9 @@ namespace ExportDAE
 		}
 
 
-		private void ExportSolid(Solid solid)
+
+
+        private void ExportSolid(Solid solid)
 		{
 			SolidOrShellTessellationControls solidOrShellTessellationControls = new SolidOrShellTessellationControls();
 			solidOrShellTessellationControls.LevelOfDetail = (double)this.userSetting.LevelOfDetail / 30.0;
@@ -628,8 +668,31 @@ namespace ExportDAE
 				}
 			}
 		}
+		#endregion
+
+		
+
+		#region 贴花（Decal）
+		/// <summary>
+		/// 导出贴花（Decal）
+		/// </summary>
+		/// <param name="element"></param>
+		private void ExportDecal(Element element)
+		{
+			if (IsDecalCurved(element))
+			{
+				ExportDecalCurved(element);
+				return;
+			}
+			ExportDecalFlat(element);
+		}
 
 
+		/// <summary>
+		/// 是不是元素贴花（Decal）？
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
 		public bool IsElementDecal(Element element)
 		{
 			try
@@ -645,18 +708,23 @@ namespace ExportDAE
 						return true;
 					}
 				}
-
 			}
 			catch (Exception)
 			{
-
 			}
 			return false;
 		}
 
 
+
+		/// <summary>
+		/// 该贴花是弯曲的嘛？curved 弯曲的，弄弯的，倒弧角，曲线的。
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
 		public bool IsDecalCurved(Element element)
 		{
+			//source 描述组成该元素的材料的元素
 			GeometryElement source = element.get_Geometry(this.Geometry_Options);
 			try
 			{
@@ -672,17 +740,57 @@ namespace ExportDAE
 		}
 
 
-		private void ExportDecal(Element element)
+
+		/// <summary>
+		/// 导出有弧度弯曲的贴花DecalCurved
+		/// </summary>
+		/// <param name="element"></param>
+		private void ExportDecalCurved(Element element)
 		{
-			if (IsDecalCurved(element))
+			ModelGeometry exportedGeometry = new ModelGeometry();
+			exportedGeometry.Transform = this.transformationStack.Peek();
+			GeometryElement expr_23 = element.get_Geometry(this.Geometry_Options);
+			Arc arc = expr_23.ToArray()[1] as Arc;
+			Curve arg_49_0 = expr_23.ToArray()[3] as Arc;
+			XYZ[] array = arc.Tessellate().ToArray<XYZ>();
+			XYZ[] array2 = arg_49_0.Tessellate().ToArray();
+			exportedGeometry.Points = new List<XYZ>(array.Length + array2.Length);
+			exportedGeometry.Uvs = new List<UV>(array.Length + array2.Length);
+			for (int i = 0; i < array.Length; i++)
 			{
-				ExportDecalCurved(element);
-				return;
+				exportedGeometry.Points.Add(array[i]);
+				exportedGeometry.Uvs.Add(new UV((double)(1f - (float)i * (1f / (float)(array.Length - 1))), 1.0));
 			}
-			ExportDecalFlat(element);
+			for (int j = 0; j < array2.Length; j++)
+			{
+				exportedGeometry.Points.Add(array2[j]);
+				exportedGeometry.Uvs.Add(new UV((double)((float)j * (1f / (float)(array.Length - 1))), 0.0));
+			}
+			exportedGeometry.Indices = new List<int>((array.Length - 1) * 6);
+			for (int k = 0; k < array.Length - 1; k++)
+			{
+				exportedGeometry.Indices.Add(k);
+				exportedGeometry.Indices.Add(k + 1);
+				exportedGeometry.Indices.Add(array.Length * 2 - k - 1);
+				exportedGeometry.Indices.Add(k + 1);
+				exportedGeometry.Indices.Add(array.Length * 2 - k - 2);
+				exportedGeometry.Indices.Add(array.Length * 2 - k - 1);
+			}
+			exportedGeometry.CalculateNormals(false);
+			exportedGeometry.MakeDoubleSided();
+			int num = this.currentDecalMaterialId;
+			this.currentDecalMaterialId = num + 1;
+			ElementId elementId = new ElementId(num);
+			this.decalMaterialIdToDecal.Add(elementId, element);
+			Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(this.documentStack.Peek(), elementId);
+			this.ChangeCurrentMaterial(tuple);
+			this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 		}
 
-
+		/// <summary>
+		/// 导出扁平的贴花（DecalFlat）adj. (flat) 光滑均匀的；（陆地）平坦的；（水面）平静的；无坡度的；扁的；
+		/// </summary>
+		/// <param name="element"></param>
 		private void ExportDecalFlat(Element element)
 		{
 			ModelGeometry exportedGeometry = new ModelGeometry();
@@ -730,72 +838,54 @@ namespace ExportDAE
 			this.ChangeCurrentMaterial(tuple);
 			this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 		}
+		#endregion
 
 
-		private void ExportDecalCurved(Element element)
-		{
-			ModelGeometry exportedGeometry = new ModelGeometry();
-			exportedGeometry.Transform = this.transformationStack.Peek();
-			GeometryElement expr_23 = element.get_Geometry(this.Geometry_Options);
-			Arc arc = expr_23.ToArray()[1] as Arc;
-			Curve arg_49_0 = expr_23.ToArray()[3] as Arc;
-			XYZ[] array = arc.Tessellate().ToArray<XYZ>();
-			XYZ[] array2 = arg_49_0.Tessellate().ToArray();
-			exportedGeometry.Points = new List<XYZ>(array.Length + array2.Length);
-			exportedGeometry.Uvs = new List<UV>(array.Length + array2.Length);
-			for (int i = 0; i < array.Length; i++)
-			{
-				exportedGeometry.Points.Add(array[i]);
-				exportedGeometry.Uvs.Add(new UV((double)(1f - (float)i * (1f / (float)(array.Length - 1))), 1.0));
-			}
-			for (int j = 0; j < array2.Length; j++)
-			{
-				exportedGeometry.Points.Add(array2[j]);
-				exportedGeometry.Uvs.Add(new UV((double)((float)j * (1f / (float)(array.Length - 1))), 0.0));
-			}
-			exportedGeometry.Indices = new List<int>((array.Length - 1) * 6);
-			for (int k = 0; k < array.Length - 1; k++)
-			{
-				exportedGeometry.Indices.Add(k);
-				exportedGeometry.Indices.Add(k + 1);
-				exportedGeometry.Indices.Add(array.Length * 2 - k - 1);
-				exportedGeometry.Indices.Add(k + 1);
-				exportedGeometry.Indices.Add(array.Length * 2 - k - 2);
-				exportedGeometry.Indices.Add(array.Length * 2 - k - 1);
-			}
-			exportedGeometry.CalculateNormals(false);
-			exportedGeometry.MakeDoubleSided();
-			int num = this.currentDecalMaterialId;
-			this.currentDecalMaterialId = num + 1;
-			ElementId elementId = new ElementId(num);
-			this.decalMaterialIdToDecal.Add(elementId, element);
-			Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(this.documentStack.Peek(), elementId);
-			this.ChangeCurrentMaterial(tuple);
-			this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
-		}
 
-
-		private bool IsElementSmallerThan(Element element, double size)
+        #region 判断元素类型
+        /// <summary>
+        /// 元素是否小于给定的值，是就忽略掉。
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="size"></param>
+        /// <returns></returns>
+        private bool IsElementSmallerThan(Element element, double size)
 		{
 			BoundingBoxXYZ boundingBoxXYZ = element.get_BoundingBox(this.userSetting.MainView3D);
 			return boundingBoxXYZ != null && boundingBoxXYZ.Enabled && (boundingBoxXYZ.Max - boundingBoxXYZ.Min).GetLength() < size;
 		}
 
 
+		/// <summary>
+		/// 元素是结构建筑类别吗？
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
 		private bool IsElementStructural(Element element)
 		{
 			Category category = element.Category;
-			return category != null && (category.Id.IntegerValue.Equals(-2001320) || category.Id.IntegerValue.Equals(-2000175) || category.Id.IntegerValue.Equals(-2000017) || category.Id.IntegerValue.Equals(-2000018) || category.Id.IntegerValue.Equals(-2000019) || category.Id.IntegerValue.Equals(-2000020) || category.Id.IntegerValue.Equals(-2000126));
+			return category != null && (category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFraming) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Railings) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsFrameMullionCut) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsFrameMullionProjection) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsSillHeadCut) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsSillHeadProjection) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StairsRailing));
 		}
 
 
+
+		/// <summary>
+		/// 元素是内部元素吗？
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
 		private bool IsElementInInteriorCategory(Element element)
 		{
 			Category category = element.Category;
-			return category != null && (category.Id.IntegerValue.Equals(-2000080) || category.Id.IntegerValue.Equals(-2001000) || category.Id.IntegerValue.Equals(-2001040) || category.Id.IntegerValue.Equals(-2001060) || category.Id.IntegerValue.Equals(-2001100) || category.Id.IntegerValue.Equals(-2001140) || category.Id.IntegerValue.Equals(-2001160) || category.Id.IntegerValue.Equals(-2001350) || category.Id.IntegerValue.Equals(-2008013) || category.Id.IntegerValue.Equals(-2008075) || category.Id.IntegerValue.Equals(-2008077) || category.Id.IntegerValue.Equals(-2008079) || category.Id.IntegerValue.Equals(-2008081) || category.Id.IntegerValue.Equals(-2008085) || category.Id.IntegerValue.Equals(-2008083) || category.Id.IntegerValue.Equals(-2008087) || category.Id.IntegerValue.Equals(-2000151) || category.Id.IntegerValue.Equals(-2001120));
+			return category != null && (category.Id.IntegerValue.Equals(BuiltInCategory.OST_Furniture) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Casework) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_ElectricalEquipment) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_ElectricalFixtures) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_FurnitureSystems) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_MechanicalEquipment) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_PlumbingFixtures) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_SpecialityEquipment) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_DuctTerminal) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_TelephoneDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_NurseCallDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_SecurityDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_CommunicationDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_FireAlarmDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_DataDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_LightingDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_GenericModel) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_LightingFixtures));
 		}
 
 
+		/// <summary>
+		/// 元素是草稿类别嘛？主体结构，建结构筑，路，幕墙等等？
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
 		private bool IsElementInDraftCategory(Element element)
 		{
 			Category category = element.Category;
@@ -805,7 +895,7 @@ namespace ExportDAE
 				{
 					category = category.Parent;
 				}
-				if (category.Id.IntegerValue.Equals(-2001391) || category.Id.IntegerValue.Equals(-2001352) || category.Id.IntegerValue.Equals(-2000011) || category.Id.IntegerValue.Equals(-2000035) || category.Id.IntegerValue.Equals(-2001340) || category.Id.IntegerValue.Equals(-2000100) || category.Id.IntegerValue.Equals(-2000032) || category.Id.IntegerValue.Equals(-2000038) || category.Id.IntegerValue.Equals(-2000014) || category.Id.IntegerValue.Equals(-2000120) || category.Id.IntegerValue.Equals(-2001180) || category.Id.IntegerValue.Equals(-2001220) || category.Id.IntegerValue.Equals(-2000180) || category.Id.IntegerValue.Equals(-2000090) || category.Id.IntegerValue.Equals(-2000170) || category.Id.IntegerValue.Equals(-2000171) || category.Id.IntegerValue.Equals(-2001300) || category.Id.IntegerValue.Equals(-2001330) || category.Id.IntegerValue.Equals(-2001320) || category.Id.IntegerValue.Equals(-2000023))
+				if (category.Id.IntegerValue.Equals(BuiltInCategory.OST_Gutter) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_RvtLinks) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Walls) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Roofs) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Topography) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Columns) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Floors) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Ceilings) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Windows) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Stairs) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Parking) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Roads) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Ramps) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Curtain_Systems) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_CurtainWallPanels) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_CurtainWallMullions) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFoundation) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralColumns) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFraming) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Doors))
 				{
 					return true;
 				}
@@ -814,6 +904,12 @@ namespace ExportDAE
 		}
 
 
+
+		/// <summary>
+		/// 元素是双面类别嘛？
+		/// </summary>
+		/// <param name="element"></param>
+		/// <returns></returns>
 		private bool IsElementInDoubleSidedCategory(Element element)
 		{
 			Category category = element.Category;
@@ -823,28 +919,14 @@ namespace ExportDAE
 				{
 					category = category.Parent;
 				}
-				if (category.Id.IntegerValue.Equals(-2000038))
+				if (category.Id.IntegerValue.Equals(BuiltInCategory.OST_Ceilings))//是不是天花板？
 				{
 					return true;
 				}
 			}
 			return false;
 		}
-
-
-
-
-
-		private void ChangeCurrentMaterial(Tuple<Document, ElementId> documentAndMaterialId)
-		{
-			this.currentDocumentAndMaterialId = documentAndMaterialId;
-			if (!this.documentAndMaterialIdToGeometries.ContainsKey(this.currentDocumentAndMaterialId))
-			{
-				this.documentAndMaterialIdToGeometries.Add(this.currentDocumentAndMaterialId, new List<ModelGeometry>(100));
-			}
-		}
-
-		#endregion
-	}
+        #endregion
+    }
 
 }

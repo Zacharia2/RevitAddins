@@ -63,8 +63,10 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Test\Collada141.cs" />
-    <Compile Include="Test\TestColloda.cs" />
+    <Compile Include="Test\IExportContext接口整理.csmd" />
+    <None Include="Test\Collada141.csmd" />
+    <None Include="Test\CustomExporter接口整理.csmd" />
+    <None Include="Test\TestColloda.csmd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -273,7 +273,7 @@ namespace ExportDAE
 		}
 
 		/// <summary>
-		/// 使双面？？？
+		/// 使双面.Sided 双面;双面材质;显示单面的;有边的
 		/// </summary>
 		public void MakeDoubleSided()
 		{
