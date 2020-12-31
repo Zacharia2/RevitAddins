@@ -149,36 +149,36 @@ namespace ExportDAE
 		/// <returns>如果要跳过导出此元素，请返回RenderNodeAction.Skip，否则返回RenderNodeAction.Proceed。</returns>
 		RenderNodeAction IExportContext.OnElementBegin(ElementId elementId)
 		{
-			this.elementStack.Push(elementId);
-			Element element = this.documentStack.Peek().GetElement(elementId);
-			if (element != null)
-			{
-				if (this.userSetting.SkipInteriorDetails && this.IsElementInInteriorCategory(element))
-				{
-					return RenderNodeAction.Skip;
-				}
-				this.isElementDoubleSided = false;
-				if (this.IsElementInDoubleSidedCategory(element))
-				{
-					this.isElementDoubleSided = true;
-				}
-				if (element is FamilyInstance && this.userSetting.GeometryOptimization)
-				{
-					this.ExportSolids(element);
-					return RenderNodeAction.Skip;
-				}
-				if (this.IsElementStructural(element))
-				{
-					this.ExportSolids(element);
-					return RenderNodeAction.Skip;
-				}
-				if (this.IsElementDecal(element))
-				{
-					this.ExportDecal(element);
-					return RenderNodeAction.Skip;
-				}
-			}
-			return RenderNodeAction.Proceed;
+            this.elementStack.Push(elementId);
+            Element element = this.documentStack.Peek().GetElement(elementId);
+            if (element != null)
+            {
+                if (this.userSetting.SkipInteriorDetails && this.IsElementInInteriorCategory(element))
+                {
+                    return RenderNodeAction.Skip;
+                }
+                this.isElementDoubleSided = false;
+                if (this.IsElementInDoubleSidedCategory(element))
+                {
+                    this.isElementDoubleSided = true;
+                }
+                if (element is FamilyInstance && this.userSetting.GeometryOptimization)
+                {
+                    this.ExportSolids(element);
+                    return RenderNodeAction.Skip;
+                }
+                if (this.IsElementStructural(element))
+                {
+                    this.ExportSolids(element);
+                    return RenderNodeAction.Skip;
+                }
+                if (this.IsElementDecal(element))
+                {
+                    this.ExportDecal(element);
+                    return RenderNodeAction.Skip;
+                }
+            }
+            return RenderNodeAction.Proceed;
 		}
 
 
@@ -209,38 +209,40 @@ namespace ExportDAE
 		/// <param name="polymesh">表示多边形网格拓扑的节点</param>
 		void IExportContext.OnPolymesh(PolymeshTopology polymesh)
 		{
-			ModelGeometry exportedGeometry = new ModelGeometry();
-			exportedGeometry.Points = polymesh.GetPoints();
-			exportedGeometry.Normals = polymesh.GetNormals();
-			exportedGeometry.Uvs = polymesh.GetUVs();
-			exportedGeometry.Transform = this.transformationStack.Peek();
-			exportedGeometry.DistributionOfNormals = polymesh.DistributionOfNormals;
-			exportedGeometry.Indices = new List<int>(polymesh.GetFacets().Count * 3);
-			if (exportedGeometry.Transform.IsConformal && exportedGeometry.Transform.HasReflection)
-			{
-				using (IEnumerator<PolymeshFacet> enumerator = polymesh.GetFacets().GetEnumerator())
-				{
-					while (enumerator.MoveNext())
-					{
-						PolymeshFacet current = enumerator.Current;
-						exportedGeometry.Indices.Add(current.V1);
-						exportedGeometry.Indices.Add(current.V3);
-						exportedGeometry.Indices.Add(current.V2);
-					}
-					if (this.isElementDoubleSided)
-					{
-						exportedGeometry.MakeDoubleSided();
-					}
-					this.documentAndMaterialIdToGeometries[this.currentDocumentAndMaterialId].Add(exportedGeometry);
-				}
-			}
-			foreach (PolymeshFacet current2 in polymesh.GetFacets())
-			{
-				exportedGeometry.Indices.Add(current2.V1);
-				exportedGeometry.Indices.Add(current2.V2);
-				exportedGeometry.Indices.Add(current2.V3);
-			}
-		}
+            ModelGeometry exportedGeometry = new ModelGeometry();
+            exportedGeometry.Points = polymesh.GetPoints();
+            exportedGeometry.Normals = polymesh.GetNormals();
+            exportedGeometry.Uvs = polymesh.GetUVs();
+            exportedGeometry.Transform = transformationStack.Peek();
+            exportedGeometry.DistributionOfNormals = polymesh.DistributionOfNormals;
+            exportedGeometry.Indices = new List<int>(polymesh.GetFacets().Count * 3);
+            if (exportedGeometry.Transform.IsConformal && exportedGeometry.Transform.HasReflection)
+            {
+                using (IEnumerator<PolymeshFacet> enumerator = polymesh.GetFacets().GetEnumerator())
+                {
+                    while (enumerator.MoveNext())
+                    {
+                        PolymeshFacet current = enumerator.Current;
+                        exportedGeometry.Indices.Add(current.V1);
+                        exportedGeometry.Indices.Add(current.V3);
+                        exportedGeometry.Indices.Add(current.V2);
+                    }
+                    goto Fine;
+                }
+            }
+            foreach (PolymeshFacet current2 in polymesh.GetFacets())
+            {
+                exportedGeometry.Indices.Add(current2.V1);
+                exportedGeometry.Indices.Add(current2.V2);
+                exportedGeometry.Indices.Add(current2.V3);
+            }
+            Fine:
+            if (isElementDoubleSided)
+            {
+                exportedGeometry.MakeDoubleSided();
+            }
+            documentAndMaterialIdToGeometries[currentDocumentAndMaterialId].Add(exportedGeometry);
+        }
 
 
 		/// <summary>
@@ -249,7 +251,7 @@ namespace ExportDAE
 		/// <param name="node">表示面的输出节点。</param>
 		void IExportContext.OnFaceEnd(FaceNode node)
 		{
-
+			
 		}
 
 
@@ -258,27 +260,27 @@ namespace ExportDAE
 		/// </summary>
 		void IExportContext.Finish()
 		{
-			if (documentAndMaterialIdToGeometries.Count > 0)
-			{
-				//导出材质的文档和材质ID
-				Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial = ExportMaterials();
+            if (documentAndMaterialIdToGeometries.Count > 0)
+            {
+                //导出材质的文档和材质ID
+                Dictionary<Tuple<Document, ElementId>, ModelMaterial> documentAndMaterialIdToExportedMaterial = ExportMaterials();
 
-				//判断是否已经完成CollectTextures（纹理收集）
-				if (userSetting.CollectTextures)
-				{
-					//定义导出材质的文件夹并将贴图放进这个文件夹。//确保路径是绝对路径
-					textureFinder.CollectTextures(documentAndMaterialIdToExportedMaterial, userSetting);
-					textureFinder.MakeTexturePathsRelative(documentAndMaterialIdToExportedMaterial, userSetting);
-				}
+                //判断是否已经完成CollectTextures（纹理收集）
+                if (userSetting.CollectTextures)
+                {
+                    //定义导出材质的文件夹并将贴图放进这个文件夹。//确保路径是绝对路径
+                    textureFinder.CollectTextures(documentAndMaterialIdToExportedMaterial, userSetting);
+                    textureFinder.MakeTexturePathsRelative(documentAndMaterialIdToExportedMaterial, userSetting);
+                }
 
-				//TODO collada
-				new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(userSetting.FilePath);
-				//new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
-				documentAndMaterialIdToGeometries.Clear();
-				ChangeCurrentMaterial(currentDocumentAndMaterialId);
-			}
-			textureFinder.Clear();
-		}
+                //TODO collada
+                new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(userSetting.FilePath);
+                //new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
+                documentAndMaterialIdToGeometries.Clear();
+                ChangeCurrentMaterial(currentDocumentAndMaterialId);
+            }
+            textureFinder.Clear();
+        }
 
 
 

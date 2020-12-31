@@ -1,0 +1,266 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+using System;
+using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     A class representing topology of a polymesh.
+    //     多边形网格拓扑
+    //
+    // 言论：
+    //     Topology of a polymesh consists of a number of points and triangular facets formed
+    //     by the points. Each facet is determined by three indices to the array of points.
+    //     A polymesh may have UV coordinates assigned, and always has at least one normal
+    //     associated. There may be more than one normal available for a non-planar polymesh;
+    //     there may be as many normals as there are either facets or points in the polymesh.
+    //     The DistributionOfNormals property indicates how normals are distributed along
+    //     the polymesh.
+    //     多边形的拓扑由许多点和由这些点形成的三角形小平面组成。 每个方面由指向点阵列的三个索引确定。 
+    //     多边形可能已分配了UV坐标，并且始终至少关联了一个法线。 对于非平面多边形，可能有多个法线可用； 
+    //     法线可能与多边形中的多个面或点一样多。DistributionOfNormals属性指示法线如何沿着多边形网格分布。
+    public class PolymeshTopology : IDisposable
+    {
+        ~PolymeshTopology();
+
+        //
+        // 摘要:
+        //     Indicates the distribution of normal vectors along the tessellated polymesh surface.
+        //     指示法线向量沿着细分的多边形网格表面的分布。
+        public DistributionOfNormals DistributionOfNormals { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The number of points in the polymesh
+        //     多边形中的点数
+        public int NumberOfPoints { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The number of normals associated with the polymesh
+        //     与多义网格关联的法线数量
+        //
+        // 言论：
+            // The number is always equal either to '1', or the number of facets, or the number
+            // of points. The DistributionOfNormals property indicates how normals are distributed
+            // along the polymesh. If there is only one normal available, it applies to the
+            // entire mesh. Curved surfaces have normal vectors associated with either every
+            // facet or every point/vertex of the tessellated polymesh.
+            // 该数字始终等于“ 1”，即构面数或点数。  DistributionOfNormals属性指示法线如何沿着多边形网格分布。 
+            // 如果只有一个法线可用，它将应用于整个网格。 曲面具有与棋盘格化多边形的每个小平面或每个点/顶点关联的法向矢量。
+        public int NumberOfNormals { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The number of UV coordinates available for the polymesh.
+        //     可用于多边形的UV坐标数。
+        //
+        // 言论：
+        //     Normally, the number of UV coordinates corresponds to the number of points in
+        //     a polymesh, but a polymesh does not have to have UVs assigned, in which case
+        //     the value of this property is 0.
+        //     通常，UV坐标的数量与多边形网格中的点数相对应，但是不必为多边形网格分配UV，在这种情况下，此属性的值为0。
+        public int NumberOfUVs { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Specifies whether the .NET object represents a valid Revit entity.
+        //     指定.NET对象是否代表有效的Revit实体。
+        //
+        // 返回结果:
+        //     True if the API object holds a valid Revit native object, false otherwise.
+        //     如果API对象包含有效的Revit本机对象，则为true，否则为false。
+        //
+        // 言论：
+        //     If the corresponding Revit native object is destroyed, or creation of the corresponding
+        //     object is undone, a managed API object containing it is no longer valid. API
+        //     methods cannot be called on invalidated wrapper objects.
+        //     如果相应的Revit本机对象被破坏，或者撤消了相应对象的创建，则包含该对象的托管API对象将不再有效。 
+        //     无法对无效的包装器对象调用API方法。
+        public bool IsValidObject { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The number of facet in the polymesh.
+        //     多边形中的构面数。
+        public int NumberOfFacets { get; }
+
+
+
+
+        public sealed override void Dispose();
+        //
+        // 摘要:
+        //     Returns a definition of one facet
+        //     返回一个构面的定义
+        //
+        // 参数:
+        //   idx:
+        //     A zero-based index of the facet
+        //     构面的从零开始的索引
+        //
+        // 返回结果:
+        //     An instance of PolymeshFacet that represents one facet defined by 3 vertices
+        //     of the polymesh.
+        //     PolymeshFacet的一个实例，该实例表示由多边形的3个顶点定义的一个构面。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The given value is not a valid index of a facet of the polymesh. A valid value
+        //     is not negative and is smaller than the number of facets in the polymesh.
+        //     给定的值不是多边形的某个构面的有效索引。 有效值不是负数，并且小于多边形网格中的构面数。
+        public PolymeshFacet GetFacet(int idx);
+
+
+
+
+        //
+        // 摘要:
+        //     Returns a definitions of all facets of the polymesh
+        //     返回多边形所有面的定义
+        //
+        // 返回结果:
+        //     An array of PolymeshFacet instances, each of which represents one facet defined
+        //     by 3 vertices of the polymesh.
+        //     PolymeshFacet实例的数组，每个实例代表由多边形的3个顶点定义的一个构面。
+        public IList<PolymeshFacet> GetFacets();
+
+
+
+
+        //
+        // 摘要:
+        //     Returns a normal vector at the given index
+        //     在给定索引处返回法线向量
+        //
+        // 参数:
+        //   idx:
+        //     A zero-based index
+        //     从零开始的索引
+        //
+        // 返回结果:
+        //     XYZ value representing a normal vector
+        //     代表法线向量的XYZ值
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The given value is not a valid index of a normal of the polymesh. A valid valure
+        //     is not negative and is smaller than the number of normals in the polymesh.
+        //     给定的值不是多边形的法线的有效索引。 有效值不是负值，并且小于多边形中法线的数量。
+        public XYZ GetNormal(int idx);
+
+
+
+        //
+        // 摘要:
+        //     Returns all normals assigned to the polymesh
+        //     返回分配给多边形的所有法线
+        //
+        // 返回结果:
+        //     An array of XYZ values, each representing a normal vector
+        //     XYZ值的数组，每个值代表一个法线向量
+        public IList<XYZ> GetNormals();
+
+
+
+
+        //
+        // 摘要:
+        //     Returns one point at the given index.
+        //     返回给定索引处的一点。
+        //
+        // 参数:
+        //   idx:
+        //     A zero-based index of a polymesh point
+        //     多边形网格点的从零开始的索引
+        //
+        // 返回结果:
+        //     XYZ coordinates of the point
+        //     点的XYZ坐标
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The given value is not a valid index of a point of the polymesh. A valid valure
+        //     is not negative and is smaller than the number of points in the polymesh.
+        //     给定的值不是多边形网格点的有效索引。 有效值不是负值，并且小于多边形网格中的点数。
+        public XYZ GetPoint(int idx);
+
+
+
+        
+        //
+        // 摘要:
+        //     Returns all points of the polymesh.
+        //     返回多边形的所有点。
+        //
+        // 返回结果:
+        //     An array of XYZ coordinates
+        //     XYZ坐标数组
+        public IList<XYZ> GetPoints();
+
+
+
+
+        //
+        // 摘要:
+        //     Returns one UV coordinate at the given index.
+        //     在给定的索引处返回一个UV坐标。
+        //
+        // 参数:
+        //   idx:
+        //     A zero-based index of a UV coordinate
+        //     UV坐标从零开始的索引
+        //
+        // 返回结果:
+        //     UV coordinates at the given index
+        //     给定Index的UV坐标
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The given value is not a valid index of a UV coordinate of the polymesh. A valid
+        //     valure is not negative and is smaller than the number of UV coordinates in the
+        //     polymesh.
+        //     给定值不是多边形的UV坐标的有效索引。 有效值不是负值，并且小于多边形中的UV坐标数。
+        public UV GetUV(int idx);
+
+
+
+
+        //
+        // 摘要:
+        //     Returns all UV coordinates assigned to the polymesh
+        //     返回分配给多边形的所有UV坐标
+        //
+        // 返回结果:
+        //     An array of UV coordinates
+        //     UV坐标数组
+        public IList<UV> GetUVs();
+
+
+
+        
+        [HandleProcessCorruptedStateExceptions]
+        protected virtual void Dispose(bool A_0);
+        protected virtual void ReleaseUnmanagedResources(bool disposing);
+    }
+}

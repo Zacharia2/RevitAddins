@@ -66,6 +66,7 @@
     <Compile Include="Test\IExportContext接口整理.csmd" />
     <None Include="Test\Collada141.csmd" />
     <None Include="Test\CustomExporter接口整理.csmd" />
+    <None Include="Test\PolymeshTopology接口整理.csmd" />
     <None Include="Test\TestColloda.csmd" />
   </ItemGroup>
   <ItemGroup>

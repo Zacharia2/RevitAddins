@@ -89,7 +89,7 @@ namespace ExportDAE
 
 		private void levelOfDetail_ValueChanged(object sender, EventArgs e)
 		{
-			this.toolTip4.SetToolTip(this.levelOfDetail, (this.levelOfDetail.Value - 5).ToString());
+			this.toolTip4.SetToolTip(this.levelOfDetail, (this.levelOfDetail.Value - 8).ToString());
 		}
 
 		protected override void Dispose(bool disposing)
