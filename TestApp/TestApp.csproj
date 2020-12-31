@@ -77,6 +77,8 @@
     <None Include="Test\BL测试模型.dae" />
     <None Include="Test\SU测试模型.dae" />
     <None Include="Test\Transform接口整理.csmd" />
+    <None Include="Test\UV接口整理.csmd" />
+    <None Include="Test\XYZ接口整理.csmd" />
     <None Include="Test\通用测试模型.dae" />
   </ItemGroup>
   <ItemGroup>

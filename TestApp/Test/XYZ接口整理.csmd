@@ -1,0 +1,718 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+using System.Reflection;
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     Object representing coordinates in 3-dimensional space.
+    //     表示三维空间坐标的对象。
+    //
+    // 言论：
+    //     Usually this means a point or a vector in 3-dimensional space, depending on the
+    //     actual use.
+    //     通常这意味着三维空间中的一个点或一个向量，这取决于实际使用。
+    [DefaultMember("Item")]
+    public class XYZ
+    {
+        //
+        // 摘要:
+        //     Creates a default XYZ with the values (0, 0, 0).
+        //     创建一个默认的XYZ值(0,0,0)。
+        public XYZ();
+
+
+
+
+        //
+        // 摘要:
+        //     Creates an XYZ with the supplied coordinates.
+        //     使用提供的坐标创建XYZ。
+        //
+        // 参数:
+        //   x:
+        //     The first coordinate.    coordinate:坐标
+        //
+        //   y:
+        //     The second coordinate.
+        //
+        //   z:
+        //     The third coordinate.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when setting an infinite number to the X, Y or Z property.
+        public XYZ(double x, double y, double z);
+
+
+
+
+        //
+        // 摘要:
+        //     Indexed access to coordinates.
+        //     索引对坐标的访问。
+        //
+        // 参数:
+        //   idx:
+        //     Use 0 for X, 1 for Y and 2 for Z.
+        //     用0表示X, 1表示Y, 2表示Z。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentOutOfRangeException:
+        //     Thrown when an attempt is made to access the coordinate with an index that is
+        //     larger than 2.
+        public double this[int idx] { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The coordinate origin or zero vector.
+        //     坐标原点或零向量。
+        //
+        // 言论：
+        //     The zero vector is (0,0,0).
+        //     零向量是(0,0,0)
+        public static XYZ Zero { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The basis of the X axis.
+        //     X轴的基底。
+        //
+        // 言论：
+        //     The basis of the X axis is the vector (1,0,0), the unit vector on the X axis.\
+        //     X轴的基底是向量(1,0,0)，是X轴上的单位向量。
+        public static XYZ BasisX { get; }
+        //
+        // 摘要:
+        //     The basis of the Y axis.
+        //
+        // 言论：
+        //     The basis of the Y axis is the vector (0,1,0), the unit vector on the Y axis.
+        public static XYZ BasisY { get; }
+        //
+        // 摘要:
+        //     The basis of the Z axis.
+        //
+        // 言论：
+        //     The basis of the Z axis is the vector (0,0,1), the unit vector on the Z axis.
+        public static XYZ BasisZ { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Gets the third coordinate.
+        //     获取第三个坐标。
+        public double Z { get; }
+        //
+        // 摘要:
+        //     Gets the second coordinate.
+        public double Y { get; }
+        //
+        // 摘要:
+        //     Gets the first coordinate.
+        public double X { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Validates that the input point is within Revit design limits.
+        //     验证输入点是否在Revit设计范围内。
+        //
+        // 参数:
+        //   point:
+        //     The point to test.
+        //     要测试的点。
+        //
+        // 返回结果:
+        //     True if the input point is within Revit design limits, false otherwise.
+        //     如果输入点在Revit设计范围内，则为True，否则为false。
+        //
+        // 言论：
+        //     Used to validate input for geometry construction methods.
+        //     用于验证几何构造方法的输入。
+        public static bool IsWithinLengthLimits(XYZ point);
+
+
+
+
+        //
+        // 摘要:
+        //     Adds the specified vector to this vector and returns the result.
+        //     将指定的向量添加到此向量并返回结果。
+        //
+        // 参数:
+        //   source:
+        //     The vector to add to this vector.
+        //     这个向量加到这个向量上。
+        //
+        // 返回结果:
+        //     The vector equal to the sum of the two vectors.
+        //     这个向量等于这两个向量的和。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The added vector is obtained by adding each coordinate of the specified vector
+        //     to the corresponding coordinate of this vector.
+        //     添加的向量是通过将指定向量的每个坐标与该向量的对应坐标相加而得到的。
+        public XYZ Add(XYZ source);
+
+
+
+
+        //
+        // 摘要:
+        //     Returns the angle between this vector and the specified vector projected to the
+        //     specified plane.
+        //     返回此矢量与指定矢量投影到指定平面的夹角。
+        //
+        // 参数:
+        //   right:
+        //     The specified vector.
+        //     指定的向量。
+        //
+        //   normal:
+        //     The normal vector that defines the plane.
+        //     定义平面的法向量。
+        //
+        // 返回结果:
+        //     The real number between 0 and 2*PI equal to the projected angle between the two
+        //     vectors.
+        //     0到2之间的实数等于两个向量之间的投影角。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when right or normal is null.
+        //
+        // 言论：
+        //     The angle is projected onto the plane orthogonal to the specified normal vector,
+        //     counterclockwise with the normal pointing upwards.
+        //     这个角投影在与指定法向量正交的平面上，以逆时针方向，法向量指向上。
+        public double AngleOnPlaneTo(XYZ right, XYZ normal);
+
+
+
+
+        //
+        // 摘要:
+        //     Returns the angle between this vector and the specified vector.
+        //     返回此向量与指定向量之间的角度。
+        //
+        // 参数:
+        //   source:
+        //     The specified vector.
+        //     指定的向量。
+        //
+        // 返回结果:
+        //     The real number between 0 and PI equal to the angle between the two vectors in
+        //     radians..
+        //     0到Pi的实数等于两个向量之间的夹角(以弧度为单位)。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The angle between the two vectors is measured in the plane spanned by them.
+        //     这两个向量的夹角是在它们张成的平面上测量的。
+        public double AngleTo(XYZ source);
+
+
+
+
+        //
+        // 摘要:
+        //     The cross product of this vector and the specified vector.
+        //     这个向量和指定向量的叉乘。
+        //
+        // 参数:
+        //   source:
+        //     The vector to multiply with this vector.
+        //     和这个向量相乘的向量。
+        //
+        // 返回结果:
+        //     The vector equal to the cross product.
+        //     这个向量等于叉乘。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The cross product is defined as the vector which is perpendicular to both vectors
+        //     with a magnitude equal to the area of the parallelogram they span. Also known
+        //     as vector product or outer product.
+        //     叉乘被定义为垂直于两个向量的向量的大小等于它们张成的平行四边形的面积。也被称为向量积或外积。
+        public XYZ CrossProduct(XYZ source);
+
+
+
+
+        //
+        // 摘要:
+        //     Returns the distance from this point to the specified point.
+        //     返回从该点到指定点的距离。
+        //
+        // 参数:
+        //   source:
+        //     The specified point.
+        //     指定的点。
+        //
+        // 返回结果:
+        //     The real number equal to the distance between the two points.
+        //     等于两点之间距离的实数。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The distance between the two points is equal to the length of the vector that
+        //     joins the two points.
+        //     两点之间的距离等于连接两点的向量的长度。
+        public double DistanceTo(XYZ source);
+
+
+
+
+        //
+        // 摘要:
+        //     Divides this vector by the specified value and returns the result.
+        //     将这个向量除以指定的值并返回结果。
+        //
+        // 参数:
+        //   value:
+        //     The value to divide this vector by.
+        //     这个向量要除以的值。
+        //
+        // 返回结果:
+        //     The divided vector.
+        //     分裂的向量。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number or zero.
+        //
+        // 言论：
+        //     The divided vector is obtained by dividing each coordinate of this vector by
+        //     the specified value.
+        //     被分割的向量是通过将该向量的每个坐标除以指定的值得到的。
+        public XYZ Divide(double value);
+
+
+
+
+        //
+        // 摘要:
+        //     The dot product of this vector and the specified vector.
+        //     这个向量和指定向量的点积。
+        //
+        // 参数:
+        //   source:
+        //     The vector to multiply with this vector.
+        //     和这个向量相乘的向量。
+        //
+        // 返回结果:
+        //     The real number equal to the dot product.
+        //     实数等于点积。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The dot product is the sum of the respective coordinates of the two vectors:
+        //     Vx*Wx + Vy*Wy + Vz*Wz. Also known as scalar product or inner product.
+        //     点积是两个向量各自坐标的和:Vx*Wx + Vy*Wy + Vz*Wz。也称为标量积或内积。
+        public double DotProduct(XYZ source);
+
+
+
+        
+        //
+        // 摘要:
+        //     Gets the length of this vector.
+        //     得到这个向量的长度。
+        //
+        // 言论：
+        //     In 3-D Euclidean space, the length of the vector is the square root of the sum
+        //     of the three coordinates squared.
+        //     在三维欧几里得空间中，矢量的长度是三个坐标之和的平方根。
+        public double GetLength();
+
+
+
+
+        //
+        // 摘要:
+        //     Determines whether this vector and the specified vector are the same within the
+        //     tolerance (1.0e-09).
+        //     确定这个向量和指定的向量在公差(1.0e-09)内是否相同。
+        //
+        // 参数:
+        //   source:
+        //     The vector to compare with this vector.
+        //     和这个向量比较的向量。
+        //
+        // 返回结果:
+        //     True if the vectors are the same; otherwise, false.
+        //     如果向量相同则为True;否则,false。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     This routine uses Revit's default tolerance to compare two vectors to see if
+        //     they are almost equivalent. Because the tolerance is small enough this can also
+        //     be used to compare two points.
+        //     这个例程使用Revit的默认容差来比较两个向量，看看它们是否几乎相等。因为公差足够小，这也可以用来比较两个点。
+        public bool IsAlmostEqualTo(XYZ source);
+
+
+
+
+        //
+        // 摘要:
+        //     Determines whether 2 vectors are the same within the given tolerance.
+        //     确定两个向量在给定的容限内是否相同。
+        //
+        // 参数:
+        //   source:
+        //     The vector to compare with this vector.
+        //
+        //   tolerance:
+        //     The tolerance for equality check.
+        //
+        // 返回结果:
+        //     True if the vectors are the same; otherwise, false.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when tolerance is less than 0.
+        //
+        // 言论：
+        //     This routine uses an input tolerance to compare two vectors to see if they are
+        //     almost equivalent. Because it is comparing two vectors the tolerance value is
+        //     not in length units but instead represents the variation in direction between
+        //     the vectors. For very small tolerance values it should also be possible to compare
+        //     two points with this method. To compute the distance between two points for a
+        //     comparison with a larger allowable difference, use Autodesk.Revit.DB.XYZ.DistanceTo(Autodesk.Revit.DB.XYZ).
+        //     这个例程使用输入容差来比较两个向量，看它们是否相等几乎是等价的。因为它是在比较两个向量，
+        //     所以容差值是不是以长度为单位，而是表示在方向上的变化的向量。对于非常小的公差值，也应该可以进行比较这个方法有两点。
+        //     为a计算两点之间的距离如果有更大的允许差异，请使用Autodesk.Revit.DB.XYZ. distanceto (Autodesk.Revit.DB.XYZ)。
+        public bool IsAlmostEqualTo(XYZ source, double tolerance);
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value that indicates whether this vector is of unit length.
+        //     指示此向量是否为单位长度的布尔值。
+        //
+        // 言论：
+        //     A unit length vector has a length of one, and is considered normalized.
+        //     单位长度向量的长度为1，被认为是标准化的。
+        public bool IsUnitLength();
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value that indicates whether this vector is a zero vector.
+        //     指示此向量是否为零向量的布尔值。
+        //
+        // 言论：
+        //     The zero vector's each component is zero within the tolerance (1.0e-09).
+        //     零矢量的每个分量在公差范围内为零(1.0e-09)。
+        public bool IsZeroLength();
+
+
+
+        
+        //
+        // 摘要:
+        //     Multiplies this vector by the specified value and returns the result.
+        //     将这个向量乘以指定的值并返回结果。
+        //
+        // 参数:
+        //   value:
+        //     The value to multiply with this vector.
+        //     与这个向量相乘的值。
+        //
+        // 返回结果:
+        //     The multiplied vector.
+        //     乘以向量。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //
+        // 言论：
+        //     The multiplied vector is obtained by multiplying each coordinate of this vector
+        //     by the specified value.
+        //     相乘的向量是通过将这个向量的每个坐标乘以指定的值得到的。
+        public XYZ Multiply(double value);
+
+
+
+
+        //
+        // 摘要:
+        //     Negates this vector.
+        //     逆转这个向量。
+        //
+        // 返回结果:
+        //     The vector opposite to this vector.
+        //     这个向量的相对向量。
+        //
+        // 言论：
+        //     The negated vector is obtained by changing the sign of each coordinate of this
+        //     vector.
+        //     负向量是通过改变这个向量的每个坐标的符号得到的。
+        public XYZ Negate();
+
+
+
+
+        //
+        // 摘要:
+        //     Returns a new XYZ whose coordinates are the normalized values from this vector.
+        //     返回一个新的XYZ，其坐标为该向量的规范化值。
+        //
+        // 返回结果:
+        //     The normalized XYZ or zero if the vector is almost Zero.
+        //     规范化的XYZ或者零，如果向量几乎为零。
+        //
+        // 言论：
+        //     Normalized indicates that the length of this vector equals one (a unit vector).
+        //     normalize表示这个向量的长度等于1(一个单位向量)。
+        public XYZ Normalize();
+
+
+
+
+        //
+        // 摘要:
+        //     Subtracts the specified vector from this vector and returns the result.
+        //     从这个向量减去指定的向量并返回结果。
+        //
+        // 参数:
+        //   source:
+        //     The vector to subtract from this vector.
+        //     这个向量减去这个向量。
+        //
+        // 返回结果:
+        //     The vector equal to the difference between the two vectors.
+        //     这个向量等于这两个向量之差。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The subtracted vector is obtained by subtracting each coordinate of the specified
+        //     vector from the corresponding coordinate of this vector.
+        //     减去的向量是通过将指定向量的每个坐标与该向量的对应坐标相减而得到的。
+        public XYZ Subtract(XYZ source);
+
+
+
+
+        //
+        // 摘要:
+        //     Gets formatted string showing (X, Y, Z) with values formatted to 9 decimal places.
+        //     获取格式化字符串，显示(X, Y, Z)，值格式化为小数点后9位。
+        public override string ToString();
+
+
+
+
+        //
+        // 摘要:
+        //     The triple product of this vector and the two specified vectors.
+        //     这个向量和两个指定向量的三重积。
+        //
+        // 参数:
+        //   middle:
+        //     The second vector.
+        //
+        //   right:
+        //     The third vector.
+        //
+        // 返回结果:
+        //     The real number equal to the triple product.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when middle or right is null.
+        //
+        // 言论：
+        //     The scalar triple product is defined as the dot product of one of the vectors
+        //     with the cross product of the other two. Geometrically, this product is the (signed)
+        //     volume of the parallelepiped formed by the three vectors given.
+        //     标量三重积定义为其中一个向量的点积与另外两个向量的叉积。
+        //     几何上，这个乘积是由给定的三个向量组成的平行六面体的(有符号的)体积。
+        public double TripleProduct(XYZ middle, XYZ right);
+
+
+
+
+        //
+        // 摘要:
+        //     Adds the two specified vectors and returns the result.
+        //     添加两个指定的向量并返回结果。
+        //
+        // 参数:
+        //   left:
+        //     The first vector.
+        //
+        //   right:
+        //     The second vector.
+        //
+        // 返回结果:
+        //     The vector equal to the sum of the two source vectors.
+        //     这个向量等于两个源向量的和。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left or right is null.
+        //
+        // 言论：
+        //     The added vector is obtained by adding each coordinate of the right vector to
+        //     the corresponding coordinate of the left vector.
+        public static XYZ operator +(XYZ left, XYZ right);
+        //
+        // 摘要:
+        //     Negates the specified vector and returns the result.
+        //
+        // 返回结果:
+        //     The vector opposite to the specified vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The negated vector is obtained by changing the sign of each coordinate of the
+        //     specified vector.
+        public static XYZ operator -(XYZ source);
+        //
+        // 摘要:
+        //     Subtracts the two specified vectors and returns the result.
+        //
+        // 参数:
+        //   left:
+        //     The first vector.
+        //
+        //   right:
+        //     The second vector.
+        //
+        // 返回结果:
+        //     The vector equal to the difference between the two source vectors.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left or right is null.
+        //
+        // 言论：
+        //     The subtracted vector is obtained by subtracting each coordinate of the right
+        //     vector from the corresponding coordinate of the left vector.
+        public static XYZ operator -(XYZ left, XYZ right);
+        //
+        // 摘要:
+        //     Multiplies the specified number and the specified vector.
+        //
+        // 参数:
+        //   value:
+        //     The value to multiply with the specified vector.
+        //
+        //   right:
+        //     The vector to multiply with the value.
+        //
+        // 返回结果:
+        //     The multiplied vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when right is null.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //
+        // 言论：
+        //     The multiplied vector is obtained by multiplying each coordinate of the specified
+        //     vector by the specified value.
+        public static XYZ operator *(double value, XYZ right);
+        //
+        // 摘要:
+        //     Multiplies the specified number and the specified vector.
+        //
+        // 参数:
+        //   left:
+        //     The vector to multiply with the value.
+        //
+        //   value:
+        //     The value to multiply with the specified vector.
+        //
+        // 返回结果:
+        //     The multiplied vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //
+        // 言论：
+        //     The multiplied vector is obtained by multiplying each coordinate of the specified
+        //     vector by the specified value.
+        public static XYZ operator *(XYZ left, double value);
+        //
+        // 摘要:
+        //     Divides the specified vector by the specified value.
+        //
+        // 参数:
+        //   left:
+        //     The value to divide the vector by.
+        //
+        //   value:
+        //     The vector to divide by the value.
+        //
+        // 返回结果:
+        //     The divided vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number or zero.
+        //
+        // 言论：
+        //     The divided vector is obtained by dividing each coordinate of the specified vector
+        //     by the specified value.
+        public static XYZ operator /(XYZ left, double value);
+    }
+}

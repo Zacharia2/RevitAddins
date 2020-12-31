@@ -1,0 +1,575 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+using System.Reflection;
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     Object representing coordinates in 2-dimensional space.
+    //     表示二维空间坐标的对象。
+    //
+    // 言论：
+    //     Usually this means parameters on a surface. In actual use, it could be interpreted
+    //     as either point or vector in 2-dimensional space.
+    //     通常这意味着曲面上的参数。在实际使用中，它既可以被解释为点，也可以被解释为二维空间中的向量。
+    [DefaultMember("Item")]
+    public class UV
+    {
+        //
+        // 摘要:
+        //     Creates a default UV with the values (0, 0).
+        //     创建一个默认的UV值(0,0)。
+        public UV();
+
+
+
+
+        //
+        // 摘要:
+        //     Creates a UV with the supplied coordinates.
+        //     使用提供的坐标创建UV。
+        //
+        // 参数:
+        //   u:
+        //     The first coordinate.
+        //
+        //   v:
+        //     The second coordinate.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when setting an infinite number to the U or V property.
+        public UV(double u, double v);
+
+
+
+
+
+        public double this[int idx] { get; }
+
+
+
+
+
+        //
+        // 摘要:
+        //     The coordinate origin or zero 2-D vector.
+        //     坐标原点，或者说二维向量0。
+        //
+        // 言论：
+        //     The zero vector is (0,0).
+        public static UV Zero { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The basis of the U axis.
+        //     U轴的基底。
+        //
+        // 言论：
+        //     The basis of the U axis is the vector (1,0), the unit vector on the U axis.
+        //     U轴的基是向量(1,0)，是U轴上的单位向量。
+        public static UV BasisU { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The basis of the V axis.
+        //     V轴的基底。
+        //
+        // 言论：
+        //     The basis of the V axis is the vector (0,1), the unit vector on the V axis.
+        //     V轴的基是向量(0,1)，是V轴上的单位向量。
+        public static UV BasisV { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Gets the second coordinate.
+        public double V { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Gets the first coordinate.
+        public double U { get; }
+
+
+
+
+
+        //
+        // 摘要:
+        //     Adds the specified 2-D vector to this 2-D vector and returns the result.
+        //     将指定的二维向量添加到这个二维向量中并返回结果。
+        //
+        // 参数:
+        //   source:
+        //     The vector to add to this vector.
+        //     这个向量加到这个向量上。
+        //
+        // 返回结果:
+        //     The 2-D vector equal to the sum of the two vectors.
+        //     二维向量等于两个向量的和。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The added vector is obtained by adding each coordinate of the specified vector
+        //     to the corresponding coordinate of this vector.
+        //     添加的向量是通过将指定向量的每个坐标与该向量的对应坐标相加而得到的。
+        public UV Add(UV source);
+
+
+
+
+        //
+        // 摘要:
+        //     Returns the angle between this vector and the specified vector.
+        //     返回此向量与指定向量之间的角度。
+        //
+        // 参数:
+        //   source:
+        //     The specified vector.
+        //
+        // 返回结果:
+        //     The real number between 0 and 2*PI equal to the angle between the two vectors
+        //     in radians.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The angle is measured counterclockwise.
+        public double AngleTo(UV source);
+
+
+
+
+        //
+        // 摘要:
+        //     The cross product of this 2-D vector and the specified 2-D vector.
+        //     这个二维向量和指定的二维向量的外积。
+        //
+        // 参数:
+        //   source:
+        //     The vector to multiply with this vector.
+        //
+        // 返回结果:
+        //     The real number equal to the cross product.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The cross product of the two vectors in 2-D space is equivalent to the area of
+        //     the parallelogram they span.
+        public double CrossProduct(UV source);
+
+
+
+
+        //
+        // 摘要:
+        //     Returns the distance from this 2-D point to the specified 2-D point.
+        //     返回从这个二维点到指定的二维点的距离。
+        //
+        // 参数:
+        //   source:
+        //     The specified point.
+        //
+        // 返回结果:
+        //     The real number equal to the distance between the two points.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The distance between the two points is equal to the length of the vector that
+        //     joins the two points.
+        public double DistanceTo(UV source);
+
+
+
+
+        //
+        // 摘要:
+        //     Divides this 2-D vector by the specified value and returns the result.
+        //     将这个二维向量除以指定的值并返回结果。
+        //
+        // 参数:
+        //   value:
+        //     The value to divide this vector by.
+        //
+        // 返回结果:
+        //     The divided 2-D vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is zero.
+        //
+        // 言论：
+        //     The divided vector is obtained by dividing each coordinate of this vector by
+        //     the specified value.
+        public UV Divide(double value);
+
+
+
+
+        //
+        // 摘要:
+        //     The dot product of this 2-D vector and the specified 2-D vector.
+        //     这个二维向量和指定的二维向量的点积。
+        //
+        // 参数:
+        //   source:
+        //     The vector to multiply with this vector.
+        //
+        // 返回结果:
+        //     The real number equal to the dot product.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The dot product is the sum of the respective coordinates of the two vectors:
+        //     Pu * Ru + Pv * Rv.
+        //     点积是两个向量各自坐标的和:Pu * Ru + Pv * Rv。
+        public double DotProduct(UV source);
+
+
+
+
+        //
+        // 摘要:
+        //     The length of this 2-D vector.
+        //     这个二维向量和指定的二维向量的点积。这个二维向量的长度。
+        //
+        // 言论：
+        //     In 2-D Euclidean space, the length of the vector is the square root of the sum
+        //     of the two coordinates squared.
+        public double GetLength();
+
+
+
+
+        //
+        // 摘要:
+        //     Determines whether this 2-D vector and the specified 2-D vector are the same
+        //     within a specified tolerance.
+        //     确定在指定的容差内此二维向量与指定的二维向量是否相同。
+        //
+        // 参数:
+        //   source:
+        //     The vector to compare with this vector.
+        //     和这个向量比较的向量。
+        //
+        //   tolerance:
+        //     The tolerance for equality check.
+        //
+        // 返回结果:
+        //     True if the vectors are the same; otherwise, false.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when tolerance is less than 0.
+        public bool IsAlmostEqualTo(UV source, double tolerance);
+
+
+
+
+        //
+        // 摘要:
+        //     Determines whether this 2-D vector and the specified 2-D vector are the same
+        //     within the tolerance (1.0e-09).
+        //     确定这个二维矢量和指定的二维矢量在公差(1.0e-09)内是否相同。
+        //
+        // 参数:
+        //   source:
+        //     The vector to compare with this vector.
+        //
+        // 返回结果:
+        //     True if the vectors are the same; otherwise, false.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left is null.
+        public bool IsAlmostEqualTo(UV source);
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value indicates whether this 2-D vector is of unit length.
+        //     布尔值指示这个二维向量是否为单位长度。
+        //
+        // 言论：
+        //     A unit length vector has a length of one, and is considered normalized.
+        public bool IsUnitLength();
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value indicates whether this 2-D vector is a zero vector.
+        //     布尔值指示这个二维向量是否为零向量。
+        //
+        // 言论：
+        //     The zero vector's each component is zero within the tolerance (1.0e-09).
+        public bool IsZeroLength();
+
+
+
+        
+        //
+        // 摘要:
+        //     Multiplies this 2-D vector by the specified value and returns the result.
+        //     将这个二维向量乘以指定的值并返回结果
+        //
+        // 参数:
+        //   value:
+        //     The value to multiply with this vector.
+        //
+        // 返回结果:
+        //     The multiplied 2-D vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //
+        // 言论：
+        //     The multiplied vector is obtained by multiplying each coordinate of this vector
+        //     by the specified value.
+        //     相乘的向量是通过将这个向量的每个坐标乘以指定的值得到的。
+        public UV Multiply(double value);
+
+
+
+
+        //
+        // 摘要:
+        //     Negates this 2-D vector.
+        //     逆转这个二维向量。
+        //
+        // 返回结果:
+        //     The 2-D vector opposite to this vector.
+        //
+        // 言论：
+        //     The negated vector is obtained by changing the sign of each coordinate of this
+        //     vector.
+        public UV Negate();
+
+
+
+
+        //
+        // 摘要:
+        //     Returns a new UV whose coordinates are the normalized values from this vector.
+        //     返回一个新的UV，其坐标为该向量的规范化值。
+        //
+        // 返回结果:
+        //     The normalized UV or zero if the vector is almost Zero.
+        //
+        // 言论：
+        //     Normalized indicates that the length of this vector equals one (a unit vector).
+        //     normalize表示这个向量的长度等于1(一个单位向量)。
+        public UV Normalize();
+
+
+
+
+        //
+        // 摘要:
+        //     Subtracts the specified 2-D vector from this 2-D vector and returns the result.
+        //     从这个二维向量减去指定的二维向量并返回结果。
+        //
+        // 参数:
+        //   source:
+        //     The vector to subtract from this vector.
+        //
+        // 返回结果:
+        //     The 2-D vector equal to the difference between the two vectors.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left is null.
+        //
+        // 言论：
+        //     The subtracted vector is obtained by subtracting each coordinate of the specified
+        //     vector from the corresponding coordinate of this vector.
+        public UV Subtract(UV source);
+
+
+
+
+        //
+        // 摘要:
+        //     Gets formatted string showing (U, V) with values formatted to 9 decimal places.
+        //     获取格式化字符串，显示(U, V)，值格式化到小数点后9位。
+        public override string ToString();
+
+
+
+
+
+        //
+        // 摘要:
+        //     Adds the two specified 2-D vectors and returns the result.
+        //
+        // 参数:
+        //   left:
+        //     The first vector.
+        //
+        //   right:
+        //     The second vector.
+        //
+        // 返回结果:
+        //     The 2-D vector equal to the sum of the two source vectors.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left or right is null.
+        //
+        // 言论：
+        //     The added vector is obtained by adding each coordinate of the right vector to
+        //     the corresponding coordinate of the left vector.
+        public static UV operator +(UV left, UV right);
+        //
+        // 摘要:
+        //     Negates this 2-D vector and returns the result.
+        //
+        // 返回结果:
+        //     The 2-D vector opposite to this vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when source is null.
+        //
+        // 言论：
+        //     The negated vector is obtained by changing the sign of each coordinate of the
+        //     specified vector.
+        public static UV operator -(UV source);
+        //
+        // 摘要:
+        //     Subtracts the two specified 2-D vectors and returns the result.
+        //
+        // 参数:
+        //   left:
+        //     The first vector.
+        //
+        //   right:
+        //     The second vector.
+        //
+        // 返回结果:
+        //     The 2-D vector equal to the difference between the two source vectors.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left or right is null.
+        //
+        // 言论：
+        //     The subtracted vector is obtained by subtracting each coordinate of the right
+        //     vector from the corresponding coordinate of the left vector.
+        public static UV operator -(UV left, UV right);
+        //
+        // 摘要:
+        //     The product of the specified number and the specified 2-D vector.
+        //
+        // 参数:
+        //   value:
+        //     The value to multiply with the specified vector.
+        //
+        //   right:
+        //     The vector to multiply with the value.
+        //
+        // 返回结果:
+        //     The multiplied 2-D vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when right is null.
+        //
+        // 言论：
+        //     The multiplied vector is obtained by multiplying each coordinate of the specified
+        //     vector by the specified value.
+        public static UV operator *(double value, UV right);
+        //
+        // 摘要:
+        //     The product of the specified number and the specified 2-D vector.
+        //
+        // 参数:
+        //   left:
+        //     The vector to multiply with the value.
+        //
+        //   value:
+        //     The value to multiply with the specified vector.
+        //
+        // 返回结果:
+        //     The multiplied 2-D vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left is null.
+        //
+        // 言论：
+        //     The multiplied vector is obtained by multiplying each coordinate of the specified
+        //     vector by the specified value.
+        public static UV operator *(UV left, double value);
+        //
+        // 摘要:
+        //     Divides the specified 2-D vector by the specified value.
+        //
+        // 参数:
+        //   left:
+        //     The value to divide the vector by.
+        //
+        //   value:
+        //     The vector to divide by the value.
+        //
+        // 返回结果:
+        //     The divided 2-D vector.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number or zero.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when left is null.
+        //
+        // 言论：
+        //     The divided vector is obtained by dividing each coordinate of the specified vector
+        //     by the specified value.
+        public static UV operator /(UV left, double value);
+    }
+}
