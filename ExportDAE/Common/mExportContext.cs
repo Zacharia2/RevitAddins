@@ -209,13 +209,15 @@ namespace ExportDAE
 		/// <param name="polymesh">表示多边形网格拓扑的节点</param>
 		void IExportContext.OnPolymesh(PolymeshTopology polymesh)
 		{
-            ModelGeometry exportedGeometry = new ModelGeometry();
-            exportedGeometry.Points = polymesh.GetPoints();
-            exportedGeometry.Normals = polymesh.GetNormals();
-            exportedGeometry.Uvs = polymesh.GetUVs();
-            exportedGeometry.Transform = transformationStack.Peek();
-            exportedGeometry.DistributionOfNormals = polymesh.DistributionOfNormals;
-            exportedGeometry.Indices = new List<int>(polymesh.GetFacets().Count * 3);
+            ModelGeometry exportedGeometry = new ModelGeometry
+            {
+                Points = polymesh.GetPoints(),
+                Normals = polymesh.GetNormals(),
+                Uvs = polymesh.GetUVs(),
+                Transform = transformationStack.Peek(),
+                DistributionOfNormals = polymesh.DistributionOfNormals,
+                Indices = new List<int>(polymesh.GetFacets().Count * 3)
+            };
             if (exportedGeometry.Transform.IsConformal && exportedGeometry.Transform.HasReflection)
             {
                 using (IEnumerator<PolymeshFacet> enumerator = polymesh.GetFacets().GetEnumerator())
@@ -853,38 +855,67 @@ namespace ExportDAE
         /// <returns></returns>
         private bool IsElementSmallerThan(Element element, double size)
 		{
-			BoundingBoxXYZ boundingBoxXYZ = element.get_BoundingBox(this.userSetting.MainView3D);
+			BoundingBoxXYZ boundingBoxXYZ = element.get_BoundingBox(userSetting.MainView3D);
 			return boundingBoxXYZ != null && boundingBoxXYZ.Enabled && (boundingBoxXYZ.Max - boundingBoxXYZ.Min).GetLength() < size;
 		}
 
 
 		/// <summary>
 		/// 元素是结构建筑类别吗？
+		/// 结构框架、金属栏杆、框架/竖梃、窗框竖框切割、栏杆扶手、窗台/盖板
 		/// </summary>
 		/// <param name="element"></param>
 		/// <returns></returns>
 		private bool IsElementStructural(Element element)
 		{
 			Category category = element.Category;
-			return category != null && (category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFraming) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Railings) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsFrameMullionCut) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsFrameMullionProjection) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsSillHeadCut) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsSillHeadProjection) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StairsRailing));
+			return category != null && (category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFraming)
+				|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Railings)
+				|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsFrameMullionCut)
+				|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsFrameMullionProjection)
+				|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsSillHeadCut)
+				|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_WindowsSillHeadProjection)
+				|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_StairsRailing));
 		}
 
 
 
 		/// <summary>
-		/// 元素是内部元素吗？
+		/// 元素是内部元素吗？家具、橱柜、电气设备、电气装置、家具系统、机械设备
+		/// 卫浴装置、专用设备、风道末端 、电话设备、护理呼叫设备、安全设备、
+		/// 通讯设备、火警设备、数据设备、灯具、常规模型、照明设备
 		/// </summary>
 		/// <param name="element"></param>
 		/// <returns></returns>
 		private bool IsElementInInteriorCategory(Element element)
 		{
 			Category category = element.Category;
-			return category != null && (category.Id.IntegerValue.Equals(BuiltInCategory.OST_Furniture) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Casework) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_ElectricalEquipment) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_ElectricalFixtures) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_FurnitureSystems) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_MechanicalEquipment) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_PlumbingFixtures) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_SpecialityEquipment) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_DuctTerminal) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_TelephoneDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_NurseCallDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_SecurityDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_CommunicationDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_FireAlarmDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_DataDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_LightingDevices) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_GenericModel) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_LightingFixtures));
+			return category != null && (category.Id.IntegerValue.Equals(BuiltInCategory.OST_Furniture) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_Casework) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_ElectricalEquipment) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_ElectricalFixtures) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_FurnitureSystems) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_MechanicalEquipment) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_PlumbingFixtures) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_SpecialityEquipment) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_DuctTerminal) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_TelephoneDevices) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_NurseCallDevices) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_SecurityDevices) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_CommunicationDevices) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_FireAlarmDevices) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_DataDevices) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_LightingDevices) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_GenericModel) || 
+				category.Id.IntegerValue.Equals(BuiltInCategory.OST_LightingFixtures));
 		}
 
 
 		/// <summary>
-		/// 元素是草稿类别嘛？主体结构，建结构筑，路，幕墙等等？
+		/// 元素是草稿类别嘛？
+		/// 墙、屋顶、地形、柱、楼板、天花板、窗、栏杆扶手
+		/// 、停车场、道路、坡道、幕墙系统、幕墙嵌板、幕墙竖梃
+		/// 、结构基础、结构柱、结构框架、门
 		/// </summary>
 		/// <param name="element"></param>
 		/// <returns></returns>
@@ -897,7 +928,26 @@ namespace ExportDAE
 				{
 					category = category.Parent;
 				}
-				if (category.Id.IntegerValue.Equals(BuiltInCategory.OST_Gutter) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_RvtLinks) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Walls) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Roofs) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Topography) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Columns) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Floors) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Ceilings) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Windows) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Stairs) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Parking) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Roads) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Ramps) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Curtain_Systems) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_CurtainWallPanels) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_CurtainWallMullions) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFoundation) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralColumns) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFraming) || category.Id.IntegerValue.Equals(BuiltInCategory.OST_Doors))
+				if (category.Id.IntegerValue.Equals(BuiltInCategory.OST_Gutter)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_RvtLinks)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Walls)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Roofs)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Topography)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Columns)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Floors)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Ceilings)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Windows)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Stairs)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Parking)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Roads)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Ramps)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Curtain_Systems)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_CurtainWallPanels)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_CurtainWallMullions)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFoundation)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralColumns)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_StructuralFraming)
+					|| category.Id.IntegerValue.Equals(BuiltInCategory.OST_Doors))
 				{
 					return true;
 				}

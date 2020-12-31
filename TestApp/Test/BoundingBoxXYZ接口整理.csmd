@@ -1,0 +1,114 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     A three-dimensional rectangular box at an arbitrary location and orientation
+    //     within the Revit model.
+    //     Revit模型内任意位置和方向的三维矩形框。
+    //
+    // 言论：
+    //     BoundingBoxXYZ objects are used in Revit in several places related to views (for
+    //     example, the section box of a 3D view or the definition of a section or detail
+    //     view). BoundingBoxXYZ objects can also be obtained from elements representing
+    //     the boundary of the element in a given view. The extents of the box are determined
+    //     by three orthogonal planes extended through the minimum (Autodesk.Revit.DB.BoundingBoxXYZ.Min)
+    //     and maximum (Autodesk.Revit.DB.BoundingBoxXYZ.Max) points, but the coordinates
+    //     of these points and the orientation of the planes in relation to the coordinates
+    //     of the source model is determined by the box Transform (Autodesk.Revit.DB.BoundingBoxXYZ.Transform).
+    //     This class also has the ability to detect and mark certain extents as disabled.
+    //     Note that in the current Revit API uses of this class it is not expected that
+    //     Revit will give objects with disabled extents, and disabled extents in objects
+    //     sent to Revit will likely be ignored.
+    //     在Revit中，BoundingBoxXYZ对象在与视图相关的多个位置中使用（例如3D视图的截面框或截面或局部视图的定义）。 
+    //     还可以从表示给定视图中元素边界的元素中获取BoundingBoxXYZ对象。 框的范围由三个正交平面确定，
+    //     这些正交平面延伸到最小（Autodesk.Revit.DB.BoundingBoxXYZ.Min）和最大（Autodesk.Revit.DB.BoundingBoxXYZ.Max）点，
+    //     但是这些点的坐标和方向 相对于源模型的坐标，平面的确定由“变换”框确定（Autodesk.Revit.DB.BoundingBoxXYZ.Transform）。
+    //     该类还具有检测并将某些范围标记为已禁用的能力。
+    //     请注意，在当前使用此类的Revit API中，不希望Revit提供具有禁用范围的对象，发送给Revit的对象中的禁用范围可能会被忽略。
+    public class BoundingBoxXYZ : APIObject
+    {
+
+
+
+
+        //
+        // 摘要:
+        //     Constructs a new BoundingBoxXYZ with a default transform and extents of (-100,
+        //     -100, -100) to (100, 100, 100).
+        //     构造一个新的BoundingBoxXYZ，其默认转换范围为（-100，-100，-100）到（100，100，100）。
+        public BoundingBoxXYZ();
+
+
+
+
+        //
+        // 摘要:
+        //     Defines whether the entire bounding box is enabled.
+        //     定义是否启用整个边界框。
+        //
+        // 言论：
+        //     A disabled bounding box might be used to signal that the corresponding Revit
+        //     functionality is deactivated. For example, a disabled 3D view section box represents
+        //     an inactive section box.
+        //     禁用的边界框可能用于表示相应的Revit功能已停用。 例如，禁用的3D视图截面框表示不活动的截面框。
+        public bool Enabled { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     Maximum coordinates (upper-right-front corner of the box).
+        //     最大坐标（框的右上角）。
+        //
+        // 言论：
+        //     The bounds are defined in the coordinate space of the box.
+        //     边界在框的坐标空间中定义。
+        public XYZ Max { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     Minimum coordinates (lower-left-rear corner of the box).
+        //     最小坐标（框的左下左后角）。
+        //
+        // 言论：
+        //     The bounds are defined in the coordinate space of the box.
+        //     边界在框的坐标空间中定义。
+        public XYZ Min { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     The transform from the coordinate space of the box to the model coordinate space.
+        //     从框的坐标空间到模型坐标空间的转换。
+        //
+        // 言论：
+        //     The transform must always be right-handed and orthonormal.
+        //     变换必须始终是惯用右手且正交的。
+        public Transform Transform { get; set; }
+
+
+
+
+
+        public bool get_BoundEnabled(int bound, int dim);
+        public XYZ get_Bounds(int bound);
+        public bool get_MaxEnabled(int dim);
+        public bool get_MinEnabled(int dim);
+        public void set_BoundEnabled(int bound, int dim, bool enabled);
+        public void set_Bounds(int bound, XYZ __unnamed001);
+        public void set_MaxEnabled(int dim, bool enabled);
+        public void set_MinEnabled(int dim, bool enabled);
+        protected override void ReleaseUnmanagedResources();
+    }
+}

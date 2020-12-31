@@ -1,0 +1,567 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+using System;
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     The parameter object contains the value data assigned to that parameter.
+    //     参数对象包含分配给该参数的值数据。
+    //
+    // 言论：
+        // The piece of data contained within the parameter can be either a Double, Integer,
+        // String or ElementId. The parameter object can be retrieved from any Element object
+        // using either a built in id, definition object or shared parameter guid. All Elements
+        // within Autodesk Revit contain Parameters. These are options that can be accessed
+        // in a generic fashion. Revit contains many built in parameter types but users
+        // and now developers, via the API, can add their own parameters in the form of
+        // shared parameters. The developer should become familiar with the Revit user interface
+        // for added and managing parameters and shared parameters before using this API.
+        // The user interface components can be found in the following locations: Element
+        // Properties dialog, Shared Parameters dialog (available from the File menu), Project
+        // Parameters dialog (available from the Settings menu), Family Types dialog (available
+        // from the Settings menu when editing a family). There are several relationships
+        // between the objects that make up the APIs exposure of parameters. The parameter
+        // object contains the data value. Parameter objects can be retrieved from Elements
+        // if you know its built-in id, its definition or its shared parameter guid. Each
+        // parameter has a definition. New parameters can be added to Elements by adding
+        // a ParameterBinding object to the Document object.
+        // 参数中包含的数据段可以是双精度浮点数、整数、
+        // 字符串或ElementId。可以从任何元素对象中检索参数对象
+        // 使用内置id、定义对象或共享参数guid。所有的元素
+        // Autodesk内Revit包含参数。这些都是可以访问的选项
+        // 以一种通用的方式。Revit包含许多内置的参数类型，但用户
+        // 现在，开发人员可以通过API以……的形式添加他们自己的参数
+        // 共享参数。开发人员应该熟悉Revit用户界面
+        // 用于在使用此API之前添加和管理参数和共享参数。
+        // 用户界面组件可以在以下位置找到属性对话框，共享参数对话框(可从文件菜单)，
+        // 项目参数对话框(可从设置菜单中获得)，家族类型对话框(可从设置菜单中获得)
+        // 当编辑一个家庭时，从设置菜单)。有几种关系组成api参数公开的对象之间。的参数对象包含数据值。可以从元素中检索参数对象
+        // 如果你知道它的内置id，它的定义或者它的共享参数guid。每一个
+        // 参数有一个定义。通过添加，可以向元素添加新的参数
+        // 一个参数绑定对象到文档对象。
+    public class Parameter : APIObject
+    {
+        //
+        // 摘要:
+        //     Returns the Definition object that describes the data type, name and other details
+        //     of the parameter.
+        //     返回描述参数的数据类型、名称和其他详细信息的定义对象。
+        //
+        // 言论：
+        //     This will always be an Autodesk.Revit.DB.InternalDefinition object. If you want
+        //     the Guid for a shared parameter, use Autodesk.Revit.DB.Parameter.GUID.
+        //     这永远是Autodesk.Revit.DB。InternalDefinition对象。如果你想要共享参数的Guid，使用Autodesk.Revit.DB.Parameter.GUID。
+        public Definition Definition { get; }
+
+
+
+
+
+        //
+        // 摘要:
+        //     Get the readonly property of the parameter.
+        //     获取参数的readonly属性。
+        //
+        // 言论：
+        //     This function can be used to check if the parameter is read-only.
+        //     该功能可用于检查参数是否为只读。
+        public override bool IsReadOnly { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Indicates whether the interactive user can modify the value of this parameter.
+        //     表示交互用户是否可以修改该参数的值。
+        //
+        // 言论：
+        //     Note that for shared parameters IsReadOnly can return false for shared parameters
+        //     whose UserModifiable property is also false, because the value of those parameters
+        //     can be modified by the API. If a parameter is governed by a formula, IsReadOnly
+        //     would return true, even if the flag for UserModifiable was set to true when the
+        //     shared parameter was created.
+        //     注意，对于UserModifiable属性也是false的共享参数，IsReadOnly可以返回false，因为这些参数的值可以被API修改。
+        //     如果参数由公式管理，则IsReadOnly将返回true，即使在创建共享参数时UserModifiable的标志被设置为true。
+        public bool UserModifiable { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Identifies if the parameter has an assigned value.
+        //     标识参数是否具有指定的值。
+        public bool HasValue { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Get the display unit type of the parameter object.
+        //     获取参数对象的显示单元类型。
+        //
+        // 返回结果:
+        //     The display unit type of the parameter.
+        //     参数的显示单元类型。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown if this parameter is not of value type.
+        //     如果此参数不是值类型则抛出。
+        //
+        // 言论：
+        //     The property only applies to parameters of value types.
+        //     该属性仅适用于值类型的参数。
+        public DisplayUnitType DisplayUnitType { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The element to which this parameter belongs.
+        //     此参数所属的元素
+        public Element Element { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Identifies if the parameter is a shared parameter.
+        //     标识参数是否为共享参数。
+        public bool IsShared { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The Guid for a shared parameter.
+        //     共享参数的Guid。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when the parameter is not a shared parameter.
+        //     当参数不是共享参数时引发。
+        public Guid GUID { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Describes the type that is used internally within the parameter to store its
+        //     value.
+        //     描述参数内部用于存储其值的类型。
+        //
+        // 言论：
+        //     The property will return one of the following possibilities: String, Integer,
+        //     Double or ElementId. Based on the value of this property the correct access and
+        //     set methods should be used to retrieve and set the parameter's data value.
+        //     该属性将返回以下可能性之一:String、Integer、Double或ElementId。根据该属性的值，应该使用正确的访问和设置方法来检索和设置参数的数据值。
+        public StorageType StorageType { get; }
+
+
+
+        
+        //
+        // 摘要:
+        //     The id of the parameter.
+        //     参数的id。
+        public ElementId Id { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Provides access to the double precision number within the parameter.
+        //     提供对参数内的双精度数的访问。
+        //
+        // 返回结果:
+        //     The double value contained in the parameter.
+        //     参数中包含的双精度值。
+        //
+        // 言论：
+        //     The AsDouble method should only be used if the StorageType property returns that
+        //     the internal contents of the parameter is a double.
+        //     只有当StorageType属性返回参数的内部内容是double时，才应该使用AsDouble方法。
+        public double AsDouble();
+
+
+
+
+        //
+        // 摘要:
+        //     Provides access to the Autodesk::Revit::DB::ElementId^ stored within the parameter.
+        //     提供对Autodesk::Revit::DB::ElementId^的访问，该^存储在参数中。
+        //
+        // 返回结果:
+        //     The Autodesk::Revit::DB::ElementId^ contained in the parameter.
+        //     参数中包含的Autodesk::Revit::DB::ElementId^。
+        //
+        // 言论：
+        //     The AsAutodesk::Revit::DB::ElementId^ method should only be used if the StorageType
+        //     property returns that the internal contents of the parameter is an ElementId.
+        //     AsAutodesk::Revit::DB::ElementId^方法应该只在StorageType属性返回参数的内部内容是ElementId时使用。
+        public ElementId AsElementId();
+
+
+
+
+        //
+        // 摘要:
+        //     Provides access to the integer number within the parameter.
+        //     提供对参数内的整数的访问。
+        //
+        // 返回结果:
+        //     The integer value contained in the parameter.
+        //     参数中包含的整数值。
+        //
+        // 言论：
+        //     The AsInteger method should only be used if the StorageType property returns
+        //     that the internal contents of the parameter is an integer.
+        //     只有当StorageType属性返回参数的内部内容是整数时，才应该使用AsInteger方法。
+        public int AsInteger();
+
+
+
+
+        //
+        // 摘要:
+        //     Associates this parameter with a global parameter in the same document.
+        //     将此参数与同一文档中的全局参数关联。
+        //
+        // 参数:
+        //   gpId:
+        //     Id of a global parameter contained in this parameter's document
+        //     在该参数的文档中包含的全局参数的Id
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The input gpId is not of a valid global parameter of the given document. -or-
+        //     This parameter does not exist in the document anymore. -or- This parameter is
+        //     either not parameterizable or does not match the type of the global parameter.
+        //     输入的gpId不是给定文档的有效全局参数。-or-该参数在文档中不存在。-or-该参数不可参数化，或者与全局参数的类型不匹配。
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //
+        // 言论：
+        //     The parameter must be parameterizable, meaning it cannot be read-only, driven
+        //     by a formula, or have any other restrictions imposed by Revit. The parameter's
+        //     value type must match the type of the global parameter. Once associated property
+        //     can be later dissociated by calling the Autodesk.Revit.DB.Parameter.DissociateFromGlobalParameter
+        //     method
+        //     参数必须是可参数化的，这意味着它不能是只读的、由公式驱动的或由Revit强加的任何其他限制。
+        //     参数的值类型必须与全局参数的类型匹配。一旦关联的属性可以稍后通过调用Autodesk.Revit.DB.Parameter.DissociateFromGlobalParameter方法
+        public void AssociateWithGlobalParameter(ElementId gpId);
+
+
+
+
+        //
+        // 摘要:
+        //     Provides access to the string contents of the parameter.
+        //     提供对参数的字符串内容的访问。
+        //
+        // 返回结果:
+        //     The string contained in the parameter.
+        //     参数中包含的字符串。
+        //
+        // 言论：
+        //     The AsString method should only be used if the StorageType property returns that
+        //     the internal contents of the parameter is a string.
+        //     只有当StorageType属性返回参数的内部内容是字符串时，才应该使用AsString方法。
+        public string AsString();
+
+
+
+
+        //
+        // 摘要:
+        //     Get the parameter value as a string with units.
+        //     以带有单元的字符串形式获取参数值。
+        //
+        // 参数:
+        //   formatOptions:
+        //     Options for formatting the string.
+        //     格式化字符串的选项。
+        //
+        // 返回结果:
+        //     The string that represents the parameter value.
+        //     表示参数值的字符串。
+        public string AsValueString(FormatOptions formatOptions);
+
+
+
+
+        //
+        // 摘要:
+        //     Get the parameter value as a string with units.
+        //     以带有单元的字符串形式获取参数值。
+        //
+        // 返回结果:
+        //     The string that represents the parameter value.
+        //     表示参数值的字符串。
+        public string AsValueString();
+
+
+
+
+        //
+        // 摘要:
+        //     Tests whether this parameter can be associated with the given global parameter.
+        //     测试此参数是否可以与给定的全局参数关联。
+        //
+        // 参数:
+        //   gpId:
+        //     Id of a global parameter contained in this parameter's document
+        //     在该参数的文档中包含的全局参数的Id
+        //
+        // 返回结果:
+        //     True if this parameter can be associated with the given global parameter; False
+        //     otherwise.
+        //     如果该参数可以与给定的全局参数关联，则为True;否则False。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The input gpId is not of a valid global parameter of the given document. -or-
+        //     This parameter does not exist in the document anymore.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //
+        // 言论：
+        //     Only properties defined as parametrizable can be associated with global parameters.
+        //     That excludes any read-only and formula-driven parameters, as well as those that
+        //     have other explicit or implicit restrictions imposed by Revit.
+        //     只有定义为可参数化的属性才能与全局参数相关联。这排除了任何只读和公式驱动的参数，以及那些由Revit强加的显式或隐式限制的参数。
+        public bool CanBeAssociatedWithGlobalParameter(ElementId gpId);
+
+
+
+
+        //
+        // 摘要:
+        //     Tests whether this parameter can be associated with any global parameter.
+        //     测试此参数是否可以与任何全局参数关联。
+        //
+        // 返回结果:
+        //     True if the given parameter can be associated (is parametrizable); False otherwise.
+        //     如果给定的参数可以关联(可参数化)，则为True;否则False。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     This parameter does not exist in the document anymore.
+        //
+        // 言论：
+        //     Only properties defined as parametrizable can be associated with global parameters.
+        //     That excludes any read-only and formula-driven parameters, as well as those that
+        //     have other explicit or implicit restrictions imposed by Revit.
+        //     只有定义为可参数化的属性才能与全局参数相关联。这排除了任何只读和公式驱动的参数，以及那些由Revit强加的显式或隐式限制的参数。
+        public bool CanBeAssociatedWithGlobalParameters();
+
+
+
+
+        //
+        // 摘要:
+        //     Clears the parameter to its initial value.
+        //     将参数清除为初始值。
+        //
+        // 返回结果:
+        //     The ClearValue method will return True if the parameter was successfully cleared
+        //     to its initial value, otherwise false.
+        //     如果参数被成功清除为初始值，ClearValue方法将返回True，否则返回false。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The parameter is read-only, or the parameter is not a shared parameter, or the
+        //     shared parameter has HideWhenNoValue set to false.
+        //
+        // 言论：
+        //     This method will only succeed for Shared parameters that have their HideWhenNoValue
+        //     property set to true.
+        //     此方法仅适用于隐藏novalue属性设置为true的共享参数。
+        public bool ClearValue();
+
+
+
+
+        //
+        // 摘要:
+        //     Dissociates this parameter from a global parameter.
+        //     将该参数与全局参数分离。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     This parameter does not exist in the document anymore. -or- This parameter is
+        //     either not parameterizable or does not match the type of the global parameter.
+        //
+        // 言论：
+        //     It is assumed this parameter has been previously associated with the global parameter
+        //     by using the AssociateWithGlobalParameter(Revit::DB::ElementId^) method.
+        //     假设此参数已经通过AssociateWithGlobalParameter(Revit::DB::ElementId^)方法与全局参数关联。
+        public void DissociateFromGlobalParameter();
+
+
+
+
+        //
+        // 摘要:
+        //     Returns a global parameter, if any, currently associated with this parameter.
+        //     返回当前与该参数关联的全局参数(如果有的话)。
+        //
+        // 返回结果:
+        //     Id of a global parameter or InvalidElemetnId.
+        //     全局参数的Id或InvalidElemetnId。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     This parameter does not exist in the document anymore.
+        //
+        // 言论：
+        //     InvalidElementId is returned in case this parameter is not associated with any
+        //     global parameter. InvalidElementId is also returned if called for a parameter
+        //     that cannot even be associated with a global parameters (i.e. a non-parametrizable
+        //     parameter or parameter with a formula).
+        //     如果该参数没有与任何全局参数关联，则返回InvalidElementId。如果调用一个甚至不能与全局参数相关联的参数
+        //     (例如，一个不可参数化的参数或带有公式的参数)，也会返回InvalidElementId。
+        public ElementId GetAssociatedGlobalParameter();
+
+
+
+
+        //
+        // 摘要:
+        //     Sets the parameter to a new string of text.
+        //     将参数设置为一个新的文本字符串。
+        //
+        // 参数:
+        //   value:
+        //     The new text value to which the parameter is to be set.
+        //     参数要设置到的新文本值。
+        //
+        // 返回结果:
+        //     The Set method will return True if the parameter was successfully set to the
+        //     new value, otherwise false.
+        //     如果成功地将参数设置为新的值，Set方法将返回True，否则返回false。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The parameter is read-only.
+        //     该参数为只读。
+        //
+        // 言论：
+        //     You should only use this method if the StorageType property reports the type
+        //     of the parameter as a String.
+        //     只有当StorageType属性将参数的类型报告为字符串时，才应该使用此方法。
+        public bool Set(string value);
+
+
+
+
+
+        //
+        // 摘要:
+        //     Sets the parameter to a new integer value.
+        //
+        // 参数:
+        //   value:
+        //     The new integer value to which the parameter is to be set.
+        //
+        // 返回结果:
+        //     The Set method will return True if the parameter was successfully set to the
+        //     new value, otherwise false.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The parameter is read-only.
+        //
+        // 言论：
+        //     You should only use this method if the StorageType property reports the type
+        //     of the parameter as an integer.
+        public bool Set(int value);
+
+
+
+
+        //
+        // 摘要:
+        //     Sets the parameter to a new real number value.
+        //
+        // 参数:
+        //   value:
+        //     The new double value to which the parameter is to be set.
+        //
+        // 返回结果:
+        //     The Set method will return True if the parameter was successfully set to the
+        //     new value, otherwise false.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The parameter is read-only.
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Value must be a finite number.
+        //
+        // 言论：
+        //     You should only use this method if the StorageType property reports the type
+        //     of the parameter as a Double.
+        public bool Set(double value);
+
+
+
+
+        //
+        // 摘要:
+        //     Sets the parameter to a new element id.
+        //
+        // 参数:
+        //   value:
+        //     The new element id to which the parameter is to be set.
+        //
+        // 返回结果:
+        //     The Set method will return True if the parameter was successfully set to the
+        //     new value, otherwise false.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     The parameter is read-only.
+        //
+        // 言论：
+        //     You should only use this method if the StorageType property reports the type
+        //     of the parameter as an ElementId.
+        public bool Set(ElementId value);
+
+
+
+
+        //
+        // 摘要:
+        //     Set the parameter value according to the input string.
+        //     根据输入的字符串设置参数值。
+        //
+        // 参数:
+        //   valueString:
+        //     The string that represents the parameter value.
+        //     表示参数值的字符串。
+        //
+        // 返回结果:
+        //     Indicates whether the parameter value is successfully set.
+        //     表示参数值是否设置成功。
+        //
+        // 言论：
+        //     The method only applies to parameters of value types.
+        //     该方法仅适用于值类型的参数。
+        public bool SetValueString(string valueString);
+    }
+}

@@ -1,0 +1,93 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     A class representing the Project Base Point and Survey Point. Each Revit project
+    //     contains one project base point and one survey point. The project base point
+    //     represents the origin of the project coordinate system. The survey point represents
+    //     the origin of the shared coordinate system.
+    //     表示项目基点和勘测点的类。每个Revit项目包含一个项目基点和一个调查点。
+    //     项目基点表示项目坐标系统的原点。测点代表共享坐标系的原点。
+    public class BasePoint : Element
+    {
+
+
+
+
+        //
+        // 摘要:
+        //     Shared position of the BasePoint based on the active ProjectLocation of its belonging
+        //     Document. To get the shared position under other ProjectLocations, please use
+        //     ProjectLocation.GetProjectPosition(BasePoint.Position).
+        //     基于其所属的活动ProjectLocation的基点的共享位置文档。其他项目位置下的共享位置，请使用ProjectLocation.GetProjectPosition (BasePoint.Position)。
+        public XYZ SharedPosition { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Position of the BasePoint.
+        //     基点的位置。
+        public XYZ Position { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Indicates whether the BasePoint is shared. The project's survey point is a BasePoint
+        //     which is shared.
+        //     指示基准点是否共享。项目的测点是一个基准点这是共享的。
+        public bool IsShared { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Gets the project base point for the document.
+        //     获取文档的项目基点。
+        //
+        // 参数:
+        //   cda:
+        //     The document from which to get the project base point.
+        //     从中获得项目基点的文档。
+        //
+        // 返回结果:
+        //     The project base point of the document.
+        //     文档的项目基点。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        public static BasePoint GetProjectBasePoint(Document cda);
+
+
+
+
+        //
+        // 摘要:
+        //     Gets the survey point for the document.
+        //     获取文档的调查点。
+        //
+        // 参数:
+        //   cda:
+        //     The document from which to get the survey point.
+        //     用来获得调查点的文件。
+        //
+        // 返回结果:
+        //     The survey point of the document.
+        //     文件的调查点。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        public static BasePoint GetSurveyPoint(Document cda);
+    }
+}

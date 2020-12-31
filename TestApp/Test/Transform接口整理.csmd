@@ -1,0 +1,524 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     A transformation of the affine 3-space.
+    public class Transform : APIObject
+    {
+        //
+        // 摘要:
+        //     The copy constructor.
+        //     复制构造函数。
+        public Transform(Transform source);
+
+
+
+
+        //
+        // 摘要:
+        //     The identity transformation.
+        //     身份转换。
+        //
+        // 言论：
+        //     The identity transformation does not change a point or a vector that it is applied
+        //     to.
+        //     身份转换不会更改其应用于的点或向量。
+        public static Transform Identity { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The basis of the Z axis of this transformation.
+        //     此变换的Z轴的基础。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when the transform is internally marked as read-only.
+        //     在内部将转换标记为只读时抛出。
+        //
+        // 言论：
+        //     The Z axis of the old coordinate system in the new coordinate system, or the
+        //     3rd column of the conventional 3x4 matrix representation.
+        //     新坐标系中旧坐标系的Z轴，或常规3x4矩阵表示形式的第三列。
+        public XYZ BasisZ { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     Defines the origin of the old coordinate system in the new coordinate system.
+        //     在新坐标系中定义旧坐标系的原点。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when the transform is internally marked as read-only.
+        //
+        // 言论：
+        //     This corresponds to the fourth column vector of the conventional 3x4 matrix representation.
+        //     Also, this is the translation component of the transformation.
+        //     这对应于常规3x4矩阵表示的第四列向量。 同样，这是转换的翻译组件。
+        public XYZ Origin { get; set; }
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value that indicates whether this transformation is an identity.
+        //     指示此转换是否为标识的布尔值。
+        //
+        // 言论：
+        //     The identity transformation does not change a point or a vector that it is applied
+        //     to.
+        //     身份转换不会更改其应用于的点或向量。
+        public bool IsIdentity { get; }
+
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value that indicates whether this transformation is a translation.
+        //     指示此转换是否为转换的布尔值。
+        //
+        // 言论：
+        //     This property is true if the only effect of transformation is translation. It
+        //     checks that the basis of the transform is identity. The translation vector may
+        //     be zero (which would make this an identity transformation) or nonzero (which
+        //     would make this a non-trivial translation).
+        //     如果转换的唯一效果是翻译，则此属性为true。 它检查转换的基础是身份。 
+        //     转换向量可以为零（这将使其成为同一性转换）或非零（将其变为非平凡的转换）。
+        public bool IsTranslation { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The real number that represents the scale of the transformation.
+        //     表示转换规模的实数。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when this transformation is not conformal and the scale is undefined.
+        //     当此变换不保形且比例未定义时抛出。
+        //
+        // 言论：
+        //     When the transformation is conformal and can be decomposed as the product of
+        //     a rigid-body motion, uniform scale and reflection, this property returns the
+        //     scale value of the uniform scale transformation.
+        //     当变换是共形的并且可以分解为刚体运动，均匀缩放和反射的乘积时，此属性返回均匀缩放变换的缩放值。
+        public double Scale { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value that indicates whether this transformation produces reflection.
+        //     指示此转换是否产生反射的布尔值。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when this transformation is not conformal and the reflection is undefined.
+        //     当此变换不保形且反射未定义时抛出。
+        //
+        // 言论：
+        //     Reflection transformation changes the handedness of a coordinate system.
+        //     反射变换会更改坐标系的惯用性。
+        public bool HasReflection { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The boolean value that indicates whether this transformation is conformal.
+        //     指示此转换是否为保形的布尔值。
+        //
+        // 言论：
+        //     This property is true if this transformation can be decomposed as the product
+        //     of a rigid-body motion, uniform scale and reflection. Such transformation preserves
+        //     angles between vectors.
+        //     如果此变换可以分解为刚体运动，均匀缩放和反射的乘积，则此属性为true。 这种变换保留了向量之间的角度。
+        public bool IsConformal { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The determinant of this transformation.
+        //     这种转变的决定因素。
+        //
+        // 言论：
+        //     The geometric meaning of a determinant is as the scale factor for volume when
+        //     applied as linear transformation.
+        //     行列式的几何意义是作为线性变换应用时体积的比例因子。
+        public double Determinant { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The inverse transformation of this transformation.
+        //     此变换的逆变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when this transformation is not conformal or invertible.
+        //     当此变换不是共形或不可逆时抛出。
+        //
+        // 言论：
+        //     The transformation matrix A is invertible if there exists a transformation matrix
+        //     B such that A*B = B*A = I (identity).
+        //     如果存在一个转换矩阵B使得A * B = B * A = I（同一性），则转换矩阵A是可逆的。
+        public Transform Inverse { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The basis of the Y axis of this transformation.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when the transform is internally marked as read-only.
+        //
+        // 言论：
+        //     The Y axis of the old coordinate system in the new coordinate system, or the
+        //     2nd column of the conventional 3x4 matrix representation.
+        public XYZ BasisY { get; set; }
+        //
+        // 摘要:
+        //     The basis of the X axis of this transformation.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.InvalidOperationException:
+        //     Thrown when the transform is internally marked as read-only.
+        //
+        // 言论：
+        //     The X axis of the old coordinate system in the new coordinate system, or the
+        //     1st column of the conventional 3x4 matrix representation.
+        public XYZ BasisX { get; set; }
+
+
+
+
+
+        //
+        // 摘要:
+        //     Creates a transform that represents a reflection across the given plane.
+        //     创建一个表示在给定平面上的反射的变换。
+        //
+        // 参数:
+        //   plane:
+        //     The plane.
+        //
+        // 返回结果:
+        //     The new transform.
+        //     新变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //     一个可选的参数是NULL
+        public static Transform CreateReflection(Plane plane);
+
+
+
+
+        //
+        // 摘要:
+        //     Creates a transform that represents a rotation about the given axis at (0, 0,
+        //     0).创建一个转换，表示围绕给定轴(0,0,0)。
+        //
+        // 参数:
+        //   axis:
+        //     The rotation axis.
+        //     转动轴。
+        //
+        //   angle:
+        //     The angle.
+        //     角度
+        //
+        // 返回结果:
+        //     The new transform.
+        //     新变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The given value for angle is not finite
+        //     给定值的角度不是有限的
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentOutOfRangeException:
+        //     axis has zero length.
+        //     轴长度为零。
+        public static Transform CreateRotation(XYZ axis, double angle);
+
+
+
+
+        //
+        // 摘要:
+        //     Creates a transform that represents a rotation about the given axis at the specified
+        //     point.
+        //     创建一个转换，该转换表示在指定位置围绕给定轴的旋转点。
+        //
+        // 参数:
+        //   axis:
+        //     The rotation axis.
+        //
+        //   angle:
+        //     The angle.
+        //
+        //   origin:
+        //     The origin point.
+        //     起源点。
+        //
+        // 返回结果:
+        //     The new transform.
+        //     新变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     The given value for angle is not finite
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        //
+        //   T:Autodesk.Revit.Exceptions.ArgumentOutOfRangeException:
+        //     axis has zero length.
+        public static Transform CreateRotationAtPoint(XYZ axis, double angle, XYZ origin);
+
+
+
+
+        //
+        // 摘要:
+        //     Creates a transform that represents a translation via the specified vector.
+        //     创建通过指定向量表示转换的转换。
+        //
+        // 参数:
+        //   vector:
+        //     The translation vector.
+        //     平移向量。
+        //
+        // 返回结果:
+        //     The new transform.
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     A non-optional argument was NULL
+        public static Transform CreateTranslation(XYZ vector);
+
+
+
+
+        //
+        // 摘要:
+        //     Determines whether this transformation and the specified transformation are the
+        //     same within the tolerance (1.0e-09).
+        //     确定此转换和指定的转换在公差内是否相同(1.0e-09)。
+        //
+        // 参数:
+        //   right:
+        //     The transformation to compare with this transformation.
+        //     这个变换与这个变换比较。
+        //
+        // 返回结果:
+        //     True if the two transformations are equal; otherwise, false.
+        //     如果两个变换相等，则为真;否则,假的。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when the specified transformation is null.
+        //
+        // 言论：
+        //     The tolerance is applied memberwise for comparison.
+        public bool AlmostEqual(Transform right);
+
+
+
+
+        public XYZ get_Basis(int idx);
+
+
+
+
+        //
+        // 摘要:
+        //     Multiplies this transformation by the specified transformation and returns the
+        //     result.
+        //     将此转换与指定的转换相乘并返回结果。
+        //
+        // 参数:
+        //   right:
+        //     The specified transformation.
+        //     指定的转换。
+        //
+        // 返回结果:
+        //     The transformation equal to the composition of the two transformations.
+        //     这个变换等于两个变换的复合变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when the handle of the specified transformation is null.
+        //
+        // 言论：
+        //     The combined transformation has the same effect as applying the right transformation
+        //     first, and the left transformation, second. So, (T1(T2(p)) = (T1 * T2) (p).
+        //     组合变换与应用正确的变换具有相同的效果.首先是左变换，然后是左变换。所以(T1(T2(p)) = (T1 * T2) (p)
+        public Transform Multiply(Transform right);
+
+
+
+
+        //
+        // 摘要:
+        //     Applies the transformation to the point and returns the result.
+        //     对点应用转换并返回结果。
+        //
+        // 参数:
+        //   point:
+        //     The point to transform.
+        //     要转变的点。
+        //
+        // 返回结果:
+        //     The transformed point.
+        //     转换后的点。
+        //
+        // 言论：
+        //     Transformation of a point is affected by the translational part of the transformation.
+        //     点的变换受变换的平动部分的影响。
+        public XYZ OfPoint(XYZ point);
+
+
+
+
+        //
+        // 摘要:
+        //     Applies the transform to the vector
+        //     对向量应用变换
+        // 参数:
+        //   vec:
+        //     The vector to be transformed
+        //     要变换的向量
+        //
+        // 返回结果:
+        //     The new vector after transform
+        //     变换后的新向量
+        //
+        // 言论：
+        //     Transformation of a vector is not affected by the translational part of the transformation.
+        public XYZ OfVector(XYZ vec);
+
+
+
+
+        //
+        // 摘要:
+        //     Scales the basis vectors of this transformation and returns the result.
+        //     缩放这个变换的基向量并返回结果。
+        //
+        // 参数:
+        //   scale:
+        //     The scale value.
+        //
+        // 返回结果:
+        //     The transformation equal to the composition of the two transformations.
+        //     这个变换等于两个变换的复合变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //     当指定的值为无限值时引发。
+        //
+        // 言论：
+        //     The resulting transformation is equivalent to the application of the uniform
+        //     scale and then this transformation, in this order.
+        //     得到的变换等价于统一尺度scale的应用然后这个变换，按这个顺序。
+        public Transform ScaleBasis(double scale);
+
+
+
+
+        //
+        // 摘要:
+        //     Scales the basis vectors and the origin of this transformation and returns the
+        //     result.
+        //     缩放基向量和这个变换的原点并返回结果。
+        //
+        // 参数:
+        //   scale:
+        //     The scale value.
+        //
+        // 返回结果:
+        //     The transformation equal to the composition of the two transformations.
+        //     这个变换等于两个变换的复合变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentException:
+        //     Thrown when the specified value is an infinite number.
+        //     当指定的值为无限值时引发。
+        //
+        // 言论：
+        //     The resulting transformation is equivalent to the application of this transformation
+        //     and then the uniform scale, in this order.
+        //     得到的变换等价于统一尺度scale的应用然后这个变换，按这个顺序。
+        public Transform ScaleBasisAndOrigin(double scale);
+
+
+
+
+        public void set_Basis(int idx, XYZ __unnamed001);
+
+
+
+
+        protected override void ReleaseUnmanagedResources();
+
+
+
+
+        //
+        // 摘要:
+        //     Multiplies the two specified transforms.
+        //     将两个指定的变换相乘。
+        //
+        // 参数:
+        //   left:
+        //     The first transformation.
+        //
+        //   right:
+        //     The second transformation.
+        //
+        // 返回结果:
+        //     The transformation equal to the composition of the two transformations.
+        //     这个变换等于两个变换的复合变换。
+        //
+        // 异常:
+        //   T:Autodesk.Revit.Exceptions.ArgumentNullException:
+        //     Thrown when the handle of the first or second transformation is null.
+        //
+        // 言论：
+        //     The combined transformation has the same effect as applying the right transformation
+        //     first, and the left transformation, second. So, (T1(T2(p)) = (T1 * T2) (p).
+        //     组合变换与应用正确的变换具有相同的效果.首先是左变换，然后是左变换。所以(T1(T2(p)) = (T1 * T2) (p)
+        public static Transform operator *(Transform left, Transform right);
+    }
+}
