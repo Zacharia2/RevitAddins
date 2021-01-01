@@ -98,6 +98,7 @@
     <Compile Include="Common\ColladaStream.cs" />
     <Compile Include="Common\ColladaWriter.cs" />
     <Compile Include="Common\Command.cs" />
+    <Compile Include="Common\TestExportContext.cs" />
     <Compile Include="DataCenter\WriteRuntime.cs" />
     <Compile Include="DataCenter\ModelMaterial.cs" />
     <Compile Include="Common\ExporterDialog.cs">

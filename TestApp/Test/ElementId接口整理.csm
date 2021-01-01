@@ -1,0 +1,225 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     The ElementId object is used as a unique identification for an element within
+    //     a single project.
+    //     ElementId对象被用作单个项目中元素的唯一标识。
+    //
+    // 言论：
+    //     The Value within the ElementId is only unique with a single project. It is not
+    //     unique across several projects. The Id can be used to retrieve a specific element
+    //     from the database when needed. However ids are subject to change during an Autodesk
+    //     Revit session and as such should not be retained and used across repeated calls
+    //     to external commands. If a manner is needed to uniquely identify an element beyond
+    //     this limitation then a shared parameter should be added to the element containing
+    //     a unique identifier managed by the external application.
+    //     ElementId中的值仅在单个项目中是唯一的。这在几个项目中并不罕见。需要时，可以使用Id从数据库中检索特定的元素。
+    //     然而，在Autodesk Revit会话期间，id可能会发生变化，因此不应保留并在对外部命令的重复调用中使用。
+    //     如果需要一种方式来唯一标识超出此限制的元素，那么应该向包含由外部应用程序管理的唯一标识符的元素添加共享参数。
+    public class ElementId
+    {
+        //
+        // 摘要:
+        //     Create an ElementId handle with the given BuiltInParameter id.
+        //     使用给定的BuiltInParameter id创建一个ElementId句柄。
+        //
+        // 参数:
+        //   parameterId:
+        //     The id.
+        public ElementId(BuiltInParameter parameterId);
+
+
+
+
+        //
+        // 摘要:
+        //     Create an ElementId handle with the given BuiltInCategory id.
+        //     使用给定的builtinccategory id创建一个ElementId句柄。
+        //
+        // 参数:
+        //   categoryId:
+        //     The id.
+        public ElementId(BuiltInCategory categoryId);
+
+
+
+
+        //
+        // 摘要:
+        //     Create an ElementId handle with the given integer id.
+        //     使用给定的整数id创建一个ElementId句柄。
+        //
+        // 参数:
+        //   id:
+        //     The id.
+        public ElementId(int id);
+
+
+
+
+
+        //
+        // 摘要:
+        //     Get the invalid ElementId whose IntegerValue is -1.
+        //     获取其IntegerValue为-1的无效元素编号。
+        public static ElementId InvalidElementId { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Provides the value of the element id as an integer.
+        //     以整数形式提供元素id的值。
+        public int IntegerValue { get; }
+
+
+
+
+
+        //
+        // 摘要:
+        //     Compares two element ids.
+        //     以整数形式提供元素id的值。
+        //
+        // 参数:
+        //   id:
+        //     The ElementId to be compared with this ElementId.
+        //     要与此元素编号比较的元素编号。
+        //
+        // 返回结果:
+        //     -1 if this element id is less than id, 0 if equal, 1 if greater.
+        //     如果元素id小于id则为-1，等于0则为0，大于1则为1。
+        public int Compare(ElementId id);
+
+
+
+
+        //
+        // 摘要:
+        //     Determines whether the specified System.Object is equal to the current System.Object.
+        //     确定指定的系统是否。对象等于当前的System.Object。
+        //
+        // 参数:
+        //   obj:
+        //     Another object.
+        //     另一个对象。
+        public override bool Equals(object obj);
+
+
+
+
+        //
+        // 摘要:
+        //     Gets the integer value of the id as hash code
+        //     获取id的整数值作为散列码
+        public override int GetHashCode();
+
+
+
+
+        //
+        // 摘要:
+        //     Gets a String representation of the integer value of the id.
+        //     获取id的整数值的字符串表示形式。
+        public override string ToString();
+
+
+
+
+
+        //
+        // 摘要:
+        //     Determines whether these two ElementIds are the same.
+        //
+        // 参数:
+        //   first:
+        //     The first ElementId.
+        //
+        //   second:
+        //     The second ElementId.
+        //
+        // 返回结果:
+        //     True if the ElementIds are the same; otherwise, false.
+        public static bool operator ==(ElementId first, ElementId second);
+        //
+        // 摘要:
+        //     Determines whether these two ElementIds are different.
+        //
+        // 参数:
+        //   first:
+        //     The first ElementId.
+        //
+        //   second:
+        //     The second ElementId.
+        //
+        // 返回结果:
+        //     True if the ElementIds are different; otherwise, false.
+        public static bool operator !=(ElementId first, ElementId second);
+        //
+        // 摘要:
+        //     Determines whether this element id is less than another element id.
+        //
+        // 参数:
+        //   elementId1:
+        //     The first ElementId.
+        //
+        //   elementId2:
+        //     The second ElementId.
+        //
+        // 返回结果:
+        //     True if the first element id is less than the second element id, otherwise, false.
+        public static bool operator <(ElementId elementId1, ElementId elementId2);
+        //
+        // 摘要:
+        //     Determines whether one element id is greater than another element id.
+        //
+        // 参数:
+        //   elementId1:
+        //     The first ElementId.
+        //
+        //   elementId2:
+        //     The second ElementId.
+        //
+        // 返回结果:
+        //     True if the first element id is greater than the second element id, otherwise,
+        //     false.
+        public static bool operator >(ElementId elementId1, ElementId elementId2);
+        //
+        // 摘要:
+        //     Determines whether one element id is not greater than another element id.
+        //
+        // 参数:
+        //   elementId1:
+        //     The first ElementId.
+        //
+        //   elementId2:
+        //     The second ElementId.
+        //
+        // 返回结果:
+        //     True if the first element id is not greater than the second element id, otherwise,
+        //     false.
+        public static bool operator <=(ElementId elementId1, ElementId elementId2);
+        //
+        // 摘要:
+        //     Determines whether one element id is not less than another element id.
+        //
+        // 参数:
+        //   elementId1:
+        //     The first ElementId.
+        //
+        //   elementId2:
+        //     The second ElementId.
+        //
+        // 返回结果:
+        //     True if the first element id is not less than the second element id, otherwise,
+        //     false.
+        public static bool operator >=(ElementId elementId1, ElementId elementId2);
+    }
+}

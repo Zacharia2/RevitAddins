@@ -149,7 +149,7 @@ namespace ExportDAE
 		/// <returns>如果要跳过导出此元素，请返回RenderNodeAction.Skip，否则返回RenderNodeAction.Proceed。</returns>
 		RenderNodeAction IExportContext.OnElementBegin(ElementId elementId)
 		{
-            this.elementStack.Push(elementId);
+            elementStack.Push(elementId);
             Element element = this.documentStack.Peek().GetElement(elementId);
             if (element != null)
             {

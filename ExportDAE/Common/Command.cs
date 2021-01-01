@@ -66,8 +66,9 @@ namespace ExportDAE
 		{
 			//将文档和导出模型设置提交给 导出上下文对象。
 			MExportContext myExportContext = new MExportContext(document, userSetting);
+			TestExportContext testExportContext = new TestExportContext(document);
 			//将文档和导出上下文对象提交给 autodesk默认导出对象。
-			CustomExporter customExporter = new CustomExporter(document, myExportContext)
+			CustomExporter customExporter = new CustomExporter(document, testExportContext)
 			{
 				
 				IncludeGeometricObjects = false,//当通过导出上下文处理模型时，此标志将导出器设置为包括或排除几何对象（例如面和曲线）的输出。

@@ -1,0 +1,138 @@
+#region 程序集 RevitAPI, Version=20.0.0.0, Culture=neutral, PublicKeyToken=null
+// C:\Program Files\Autodesk\Revit 2020\RevitAPI.dll
+#endregion
+
+using Autodesk.Revit.DB.Visual;
+
+namespace Autodesk.Revit.DB
+{
+    //
+    // 摘要:
+    //     This class represents a change of material during a model-exporting process.
+    //     这个类代表材料的变化
+    //
+    // 言论：
+    //     Output nodes following this node are to be assumed using the material. The material
+    //     remains in effect until another material node is sent to the output. See also:
+    //     Autodesk::Revit::DB::IExportContext::OnMaterial.
+    //     在这个节点之后的输出节点是使用材质来假设的。直到另一个材质节点被发送到输出，材质仍然有效。参见:Autodesk::Revit::DB::IExportContext::OnMaterial.
+    public class MaterialNode : RenderNode
+    {
+        //
+        // 摘要:
+        //     The path if a file that contains a thumbnail image of the material.
+        //     如果文件中包含材质的缩略图，则为路径。
+        public string ThumbnailFile { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The level of glossiness of the material
+        //     材料的光泽度
+        public int Glossiness { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The level of smoothness of the material.
+        //     材料的平滑程度。
+        public int Smoothness { get; }
+
+
+        
+
+        //
+        // 摘要:
+        //     The color the material is being rendered at
+        //     材质渲染时的颜色
+        //
+        // 言论：
+        //     The value may differ from the default color property of the material, because
+        //     it might have been overridden by rendering settings.
+        //     这个值可能不同于材质的默认颜色属性，因为它可能已经被渲染设置覆盖了。
+        public Color Color { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The value of transparency the material is being rendered with
+        //     渲染材料的透明度的价值
+        public double Transparency { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     The Id of the element assocated with this material in the model.
+        //     模型中与这个材料相关联的元素的Id。
+        //
+        // 言论：
+        //     It is possible that no specific material is applied to a face, in which case
+        //     the default material is used, and this property returns an InvalidElementId.
+        //     有可能没有特定的材质被应用到Face上，在这种情况下使用默认材质，并且这个属性返回一个InvalidElementId。
+        public ElementId MaterialId { get; }
+
+
+
+
+        //
+        // 摘要:
+        //     Identifies if the default rendering appearance the material has is being overridden.
+        //     标识材质的默认呈现外观是否被覆盖。
+        public bool HasOverriddenAppearance { get; }
+
+
+
+
+
+        //
+        // 摘要:
+        //     Appearance properties associated with the material.
+        //     与材料相关联的外观属性。
+        //
+        // 返回结果:
+        //     An instance of a rendering material asset
+        //     渲染材质资产的实例
+        //
+        // 言论：
+        //     Properties and attributes of the material's appearance can be accessed using
+        //     the standard interface of the Asset class.
+        //     The structure of the properties, including their types and names is proprietary
+        //     and as such it is not always useful to anyone who is not familiar with the particular
+        //     schema. Also, the structure is not standardized and may change over time, therefore
+        //     it is not recommended relaying on any appearance property to be present.
+        //     材质外观的属性和属性可以通过资产类的标准接口访问。属性的结构，包括它们的类型和名称都是专有模式。
+        //     此外，该结构不是标准化的，可能会随着时间的推移而改变，因此不建议依赖于任何外观属性。
+        public Asset GetAppearance();
+
+
+
+
+        //
+        // 摘要:
+        //     Returns appearance properties that override the preset appearance of the material.
+        //     返回覆盖材质预设外观的外观属性。
+        //
+        // 返回结果:
+        //     An instance of a rendering material asset, of null if there is no override.\
+        //     渲染材质资产的实例，如果没有覆盖，则为null。
+        //
+        // 言论：
+        //     The returned instance of an Asset is valid only if there is an overide, which
+        //     happens if there are decals applied to the face that has the base material. In
+        //     such cases the rendering engine takes the asset of the material and merges it
+        //     with the decal, which results to this override asset. If there are no decals,
+        //     this instance is null and the HasOverriddenAppearance returns False.
+        //     只有当覆盖存在时，资产的返回实例才有效，当有贴花应用到具有基础材质的表面时，覆盖才会发生。
+        //     在这种情况下，渲染引擎会获取材料的资产并将其与贴花合并，从而产生覆盖资产。
+        //     如果没有贴花，这个实例是null, HasOverriddenAppearance返回False。
+        public Asset GetAppearanceOverride();
+    }
+}
