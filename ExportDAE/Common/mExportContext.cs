@@ -143,7 +143,9 @@ namespace ExportDAE
 
 
 		/// <summary>
-		/// 标记要导出的元素的开始。
+		/// 标记要导出的元素的开始。 表明为一个element intance 也就是一个模型实例数据的开始.
+		/// 一个模型实例可以包含自身顶点数据,也可以包含child instance.
+		/// 所以这里需要建立模型实例的树状结构.
 		/// </summary>
 		/// <param name="elementId">即将处理的元素的ID。</param>
 		/// <returns>如果要跳过导出此元素，请返回RenderNodeAction.Skip，否则返回RenderNodeAction.Proceed。</returns>
@@ -583,22 +585,26 @@ namespace ExportDAE
 
         private void ExportSolid(Solid solid)
 		{
-			SolidOrShellTessellationControls solidOrShellTessellationControls = new SolidOrShellTessellationControls();
-			solidOrShellTessellationControls.LevelOfDetail = (double)this.userSetting.LevelOfDetail / 30.0;
-			solidOrShellTessellationControls.Accuracy = 0.1;
-			solidOrShellTessellationControls.MinAngleInTriangle = 0.0001;
-			solidOrShellTessellationControls.MinExternalAngleBetweenTriangles = 1.0;
-			try
+            SolidOrShellTessellationControls solidOrShellTessellationControls = new SolidOrShellTessellationControls
+            {
+                LevelOfDetail = userSetting.LevelOfDetail / 30.0,
+                Accuracy = 0.1,
+                MinAngleInTriangle = 0.0001,
+                MinExternalAngleBetweenTriangles = 1.0
+            };
+            try
 			{
 				TriangulatedSolidOrShell triangulatedSolidOrShell = SolidUtils.TessellateSolidOrShell(solid, solidOrShellTessellationControls);
 				int shellComponentCount = triangulatedSolidOrShell.ShellComponentCount;
 				for (int i = 0; i < shellComponentCount; i++)
 				{
 					TriangulatedShellComponent shellComponent = triangulatedSolidOrShell.GetShellComponent(i);
-					ModelGeometry exportedGeometry = new ModelGeometry();
-					exportedGeometry.Transform = this.transformationStack.Peek();
-					exportedGeometry.Points = new List<XYZ>(shellComponent.VertexCount);
-					for (int num = 0; num != shellComponent.VertexCount; num++)
+                    ModelGeometry exportedGeometry = new ModelGeometry
+                    {
+                        Transform = this.transformationStack.Peek(),
+                        Points = new List<XYZ>(shellComponent.VertexCount)
+                    };
+                    for (int num = 0; num != shellComponent.VertexCount; num++)
 					{
 						exportedGeometry.Points.Add(shellComponent.GetVertex(num));
 					}

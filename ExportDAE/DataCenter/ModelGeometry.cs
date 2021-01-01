@@ -7,7 +7,7 @@ namespace ExportDAE
 	internal class ModelGeometry
 	{
 		/// <summary>
-		/// 坐标系
+		/// 主要用于物体的旋转移动和缩放
 		/// </summary>
 		public Transform Transform
 		{
@@ -52,7 +52,7 @@ namespace ExportDAE
 		}
 
 		/// <summary>
-		/// 法线的分布
+		/// 法线的分布,AtEachPoint = 0:一个法向量被分配给多边形的每个顶点。OnePerFace = 1:只有一个公共法向量分配给Face/polymesh多边形网格。OnEachFacet = 2:多边形网格的每个面都有一个法向量。
 		/// </summary>
 		public DistributionOfNormals DistributionOfNormals
 		{
@@ -87,7 +87,7 @@ namespace ExportDAE
 		}
 
 		/// <summary>
-		/// 计算法线
+		/// 镜像法线
 		/// </summary>
 		/// <param name="mirrored">镜像</param>
 		public void CalculateNormals(bool mirrored)
