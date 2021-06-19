@@ -87,7 +87,7 @@ namespace ExportDAE
 		}
 
 		/// <summary>
-		/// 镜像法线
+		/// 计算法线
 		/// </summary>
 		/// <param name="mirrored">镜像</param>
 		public void CalculateNormals(bool mirrored)
@@ -95,7 +95,7 @@ namespace ExportDAE
 			Normals = new List<XYZ>(Points.Count);
 			for (int i = 0; i < Points.Count; i++)
 			{
-				this.Normals.Add(XYZ.Zero);
+				Normals.Add(XYZ.Zero);
 			}
 			for (int j = 0; j < Points.Count; j++)
 			{
@@ -118,9 +118,9 @@ namespace ExportDAE
 							xYZ2 = Points[Indices[k + 1]];
 							xYZ3 = Points[Indices[k + 2]];
 						}
-						XYZ arg_139_0 = xYZ2 - xYZ;
+						XYZ K = xYZ2 - xYZ;
 						XYZ xYZ4 = xYZ3 - xYZ;
-						XYZ xYZ5 = arg_139_0.CrossProduct(xYZ4);
+						XYZ xYZ5 = K.CrossProduct(xYZ4);
 						if (!xYZ5.IsZeroLength())
 						{
 							xYZ5 = xYZ5.Normalize();
@@ -273,7 +273,7 @@ namespace ExportDAE
 		}
 
 		/// <summary>
-		/// 使双面.Sided 双面;双面材质;显示单面的;有边的
+		/// 当前实体数据变成两倍，使单面实体变成双面实体。
 		/// </summary>
 		public void MakeDoubleSided()
 		{

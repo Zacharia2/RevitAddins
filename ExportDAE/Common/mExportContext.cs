@@ -61,7 +61,7 @@ namespace ExportDAE
 		private Dictionary<ElementId, Element> decalMaterialIdToDecal = new Dictionary<ElementId, Element>();
 
 		/// <summary>
-		/// 你要对几何对象做什么可选的修改？
+		/// 设置返回几何的对象的详细程度及是否计算引用的几何对象
 		/// </summary>
 		private Options Geometry_Options;
 		private AssetSet libraryAssetSet = new AssetSet();
@@ -92,7 +92,7 @@ namespace ExportDAE
 			}
 
 			//创建几何解析中的用户首选项。
-			Geometry_Options = this.document.Application.Create.NewGeometryOptions();
+			Geometry_Options = document.Application.Create.NewGeometryOptions();
 			//确定是否计算对几何对象的引用。计算引用的几何对象。//使用这些选项提取的几何图形的详细程度。精细程度为完整。
 			Geometry_Options.ComputeReferences = true;
 			Geometry_Options.DetailLevel = ViewDetailLevel.Fine;
@@ -136,7 +136,7 @@ namespace ExportDAE
 			/*整数形式，取值范围是[0,15]（含[0,15]）或{-1}。 如果该值为正，则Revit将在细分面时使用建议的细节等级。
              * 否则，它将使用基于输出分辨率的默认算法。 如果要求明确的细节级别（即正值），
              * 则使用接近有效范围中间值的值会产生非常合理的细分。  Revit使用级别8作为其“正常” LOD。*/
-			node.LevelOfDetail = this.userSetting.LevelOfDetail;
+			node.LevelOfDetail = userSetting.LevelOfDetail;  //LOD
 			return RenderNodeAction.Proceed;
 		}
 
@@ -152,31 +152,31 @@ namespace ExportDAE
 		RenderNodeAction IExportContext.OnElementBegin(ElementId elementId)
 		{
             elementStack.Push(elementId);
-            Element element = this.documentStack.Peek().GetElement(elementId);
+            Element element = documentStack.Peek().GetElement(elementId);
             if (element != null)
             {
-                if (this.userSetting.SkipInteriorDetails && this.IsElementInInteriorCategory(element))
+                if (userSetting.SkipInteriorDetails && IsElementInInteriorCategory(element))
                 {
                     return RenderNodeAction.Skip;
                 }
-                this.isElementDoubleSided = false;
-                if (this.IsElementInDoubleSidedCategory(element))
+                isElementDoubleSided = false;
+                if (IsElementInDoubleSidedCategory(element))
                 {
-                    this.isElementDoubleSided = true;
+                    isElementDoubleSided = true;
                 }
-                if (element is FamilyInstance && this.userSetting.GeometryOptimization)
+                if (element is FamilyInstance && userSetting.GeometryOptimization)
                 {
-                    this.ExportSolids(element);
+                    ExportSolids(element);
                     return RenderNodeAction.Skip;
                 }
-                if (this.IsElementStructural(element))
+                if (IsElementStructural(element))
                 {
-                    this.ExportSolids(element);
+                    ExportSolids(element);
                     return RenderNodeAction.Skip;
                 }
-                if (this.IsElementDecal(element))
+                if (IsElementDecal(element))
                 {
-                    this.ExportDecal(element);
+                    ExportDecal(element);
                     return RenderNodeAction.Skip;
                 }
             }
@@ -190,7 +190,7 @@ namespace ExportDAE
 		/// <param name="node">描述当前材料的节点。</param>
 		void IExportContext.OnMaterial(MaterialNode node)
 		{
-			this.ChangeCurrentMaterial(new Tuple<Document, ElementId>(this.documentStack.Peek(), node.MaterialId));
+			ChangeCurrentMaterial(new Tuple<Document, ElementId>(documentStack.Peek(), node.MaterialId));
 		}
 
 
@@ -278,8 +278,10 @@ namespace ExportDAE
                 }
 
                 //TODO collada
-                new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(userSetting.FilePath);
-                //new ColladaStream(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries);
+               // new ColladaWriter(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).Write(userSetting.FilePath);
+
+				//new Mapping(documentAndMaterialIdToExportedMaterial, documentAndMaterialIdToGeometries).SaveModel(userSetting.FilePath);
+
                 documentAndMaterialIdToGeometries.Clear();
                 ChangeCurrentMaterial(currentDocumentAndMaterialId);
             }
@@ -314,7 +316,7 @@ namespace ExportDAE
 		/// <param name="elementId">刚刚处理过的元素的ID。</param>
 		void IExportContext.OnElementEnd(ElementId elementId)
 		{
-			this.elementStack.Pop();
+			elementStack.Pop();
 		}
 
 
@@ -326,7 +328,7 @@ namespace ExportDAE
 		/// <returns></returns>
 		RenderNodeAction IExportContext.OnInstanceBegin(InstanceNode node)
 		{
-			this.transformationStack.Push(this.transformationStack.Peek().Multiply(node.GetTransform()));
+			transformationStack.Push(transformationStack.Peek().Multiply(node.GetTransform()));
 			return RenderNodeAction.Proceed;
 		}
 
@@ -337,7 +339,7 @@ namespace ExportDAE
 		/// <param name="node"></param>
 		void IExportContext.OnInstanceEnd(InstanceNode node)
 		{
-			this.transformationStack.Pop();
+			transformationStack.Pop();
 		}
 
 
@@ -349,8 +351,8 @@ namespace ExportDAE
 		RenderNodeAction IExportContext.OnLinkBegin(LinkNode node)
 		{
 
-			this.documentStack.Push(node.GetDocument());
-			this.transformationStack.Push(this.transformationStack.Peek().Multiply(node.GetTransform()));
+			documentStack.Push(node.GetDocument());
+			transformationStack.Push(transformationStack.Peek().Multiply(node.GetTransform()));
 			return RenderNodeAction.Proceed;
 		}
 
@@ -361,8 +363,8 @@ namespace ExportDAE
 		/// <param name="node">表示Revit链接的输出节点。</param>
 		void IExportContext.OnLinkEnd(LinkNode node)
 		{
-			this.documentStack.Pop();
-			this.transformationStack.Pop();
+			documentStack.Pop();
+			transformationStack.Pop();
 		}
 
 
@@ -402,7 +404,7 @@ namespace ExportDAE
 		private Transform GetProjectLocationTransform(int insertionPoint)
 		{
 			Transform transform = Transform.Identity;
-			using (IEnumerator<Element> enumerator = new FilteredElementCollector(this.document).OfClass(typeof(BasePoint)).GetEnumerator())
+			using (IEnumerator<Element> enumerator = new FilteredElementCollector(document).OfClass(typeof(BasePoint)).GetEnumerator())
 			{
 				while (enumerator.MoveNext())
 				{
@@ -415,12 +417,12 @@ namespace ExportDAE
 						{
 							num = parameter.AsDouble();
 						}
-						transform = this.GetTransformFromLocation(basePoint.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble(), basePoint.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble(), basePoint.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble(), -num);
+						transform = GetTransformFromLocation(basePoint.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble(), basePoint.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble(), basePoint.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble(), -num);
 					}
 				}
 			}
-			ProjectPosition projectPosition = this.document.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
-			Transform transformFromLocation = this.GetTransformFromLocation(projectPosition.EastWest, projectPosition.NorthSouth, projectPosition.Elevation, projectPosition.Angle);
+			ProjectPosition projectPosition = document.ActiveProjectLocation.GetProjectPosition(XYZ.Zero);
+			Transform transformFromLocation = GetTransformFromLocation(projectPosition.EastWest, projectPosition.NorthSouth, projectPosition.Elevation, projectPosition.Angle);
 			return transform.Inverse * transformFromLocation;
 		}
 
@@ -511,13 +513,16 @@ namespace ExportDAE
 		}
 
 
-
+		/// <summary>
+		/// 为模型池创建当前元素面的材质ID元组索引,其后的列表是空的，待写入数据
+		/// </summary>
+		/// <param name="documentAndMaterialId"></param>
 		private void ChangeCurrentMaterial(Tuple<Document, ElementId> documentAndMaterialId)
 		{
-			this.currentDocumentAndMaterialId = documentAndMaterialId;
-			if (!this.documentAndMaterialIdToGeometries.ContainsKey(this.currentDocumentAndMaterialId))
+			currentDocumentAndMaterialId = documentAndMaterialId;
+			if (!documentAndMaterialIdToGeometries.ContainsKey(currentDocumentAndMaterialId))
 			{
-				this.documentAndMaterialIdToGeometries.Add(this.currentDocumentAndMaterialId, new List<ModelGeometry>(100));
+				documentAndMaterialIdToGeometries.Add(currentDocumentAndMaterialId, new List<ModelGeometry>(100));
 			}
 		}
 
@@ -529,13 +534,15 @@ namespace ExportDAE
         /// <summary>
         /// 体 - Solid::::
         /// 一个 Solid 是由 Face 和 Edge 来定义它边界的实体。
+		/// 
         /// </summary>
         /// <param name="element"></param>
         private void ExportSolids(Element element)
 		{
-			foreach (GeometryObject current in element.get_Geometry(this.Geometry_Options))
+			foreach (GeometryObject current in element.get_Geometry(Geometry_Options))
+			//计算引用的几何对象。精细程度为完整。
 			{
-				this.ExportGeometryObject(current);
+				ExportGeometryObject(current);
 			}
 		}
 
@@ -557,7 +564,7 @@ namespace ExportDAE
             GeometryInstance geometryInstance = geometryObject as GeometryInstance;
 			if (geometryInstance != null)
 			{
-				this.transformationStack.Push(this.transformationStack.Peek().Multiply(geometryInstance.Transform));
+				transformationStack.Push(transformationStack.Peek().Multiply(geometryInstance.Transform));
 				GeometryElement symbolGeometry = geometryInstance.GetSymbolGeometry();
 				if (symbolGeometry != null)
 				{
@@ -565,17 +572,17 @@ namespace ExportDAE
 					{
 						if (current != null)
 						{
-							this.ExportGeometryObject(current);
+							ExportGeometryObject(current);
 						}
 					}
 				}
-				this.transformationStack.Pop();
+				transformationStack.Pop();
 				return;
 			}
 			Solid solid = geometryObject as Solid;
 			if (solid != null)
 			{
-				this.ExportSolid2(solid);
+				ExportSolid2(solid);
 				return;
 			}
 		}
@@ -601,7 +608,7 @@ namespace ExportDAE
 					TriangulatedShellComponent shellComponent = triangulatedSolidOrShell.GetShellComponent(i);
                     ModelGeometry exportedGeometry = new ModelGeometry
                     {
-                        Transform = this.transformationStack.Peek(),
+                        Transform = transformationStack.Peek(),
                         Points = new List<XYZ>(shellComponent.VertexCount)
                     };
                     for (int num = 0; num != shellComponent.VertexCount; num++)
@@ -619,9 +626,9 @@ namespace ExportDAE
 					exportedGeometry.CalculateNormals(false);
 					exportedGeometry.CalculateUVs(true, false);
 					ElementId materialElementId = solid.Faces.get_Item(0).MaterialElementId;
-					Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(this.documentStack.Peek(), materialElementId);
-					this.ChangeCurrentMaterial(tuple);
-					this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
+					Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(documentStack.Peek(), materialElementId);
+					ChangeCurrentMaterial(tuple);
+					documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 				}
 			}
 			catch (Exception)
@@ -634,15 +641,19 @@ namespace ExportDAE
 		{
 			foreach (Face face in solid.Faces)
 			{
-				if (!(face == null))
+				if (!(face.Equals(null)))
 				{
 					Mesh mesh = face.Triangulate(userSetting.LevelOfDetail / 15.0);
-					if (!(mesh == null) && !mesh.Visibility.Equals(3))
+					if (!(mesh.Equals(null)) && !mesh.Visibility.Equals(Visibility.Invisible))
 					{
 						ModelGeometry exportedGeometry = new ModelGeometry();
-						exportedGeometry.Transform = this.transformationStack.Peek();
+
+						// 设置坐标系
+						exportedGeometry.Transform = transformationStack.Peek();
 						exportedGeometry.Points = new List<XYZ>(mesh.Vertices);
 						exportedGeometry.Indices = new List<int>(mesh.NumTriangles * 3);
+
+						//指示此转换是否为保形的布尔值。指示此转换是否产生反射的布尔值。反射变换会更改坐标系的惯用性。
 						if (exportedGeometry.Transform.IsConformal && exportedGeometry.Transform.HasReflection)
 						{
 							for (int i = 0; i < mesh.NumTriangles; i++)
@@ -663,17 +674,28 @@ namespace ExportDAE
 								exportedGeometry.Indices.Add((int)meshTriangle2.get_Index(2));
 							}
 						}
-						ModelGeometry expr_166 = exportedGeometry;
-						expr_166.CalculateNormals(expr_166.Transform.IsConformal && exportedGeometry.Transform.HasReflection);
+						ModelGeometry TGeometry = exportedGeometry;
+
+						//计算模型法线
+						TGeometry.CalculateNormals(TGeometry.Transform.IsConformal && exportedGeometry.Transform.HasReflection);
+
 						exportedGeometry.CalculateUVs(true, false);
+
+						//判断是不是反正双面实体
 						if (face.IsTwoSided)
 						{
 							exportedGeometry.MakeDoubleSided();
 						}
+
+						//将当前元素面的材质ID放入元组中（文档，元素材质ID）
 						ElementId materialElementId = face.MaterialElementId;
-						Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(this.documentStack.Peek(), materialElementId);
-						this.ChangeCurrentMaterial(tuple);
-						this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
+						Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(documentStack.Peek(), materialElementId);
+
+						//加入元组索引
+						ChangeCurrentMaterial(tuple);
+
+						//用元组索引将模型加入到模型数据池
+						documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 					}
 				}
 			}
@@ -735,7 +757,7 @@ namespace ExportDAE
 		public bool IsDecalCurved(Element element)
 		{
 			//source 描述组成该元素的材料的元素
-			GeometryElement source = element.get_Geometry(this.Geometry_Options);
+			GeometryElement source = element.get_Geometry(Geometry_Options);
 			try
 			{
 				if (source.ToArray()[1].GetType() == typeof(Arc) && source.ToArray()[3].GetType() == typeof(Arc))
@@ -758,8 +780,8 @@ namespace ExportDAE
 		private void ExportDecalCurved(Element element)
 		{
 			ModelGeometry exportedGeometry = new ModelGeometry();
-			exportedGeometry.Transform = this.transformationStack.Peek();
-			GeometryElement expr_23 = element.get_Geometry(this.Geometry_Options);
+			exportedGeometry.Transform = transformationStack.Peek();
+			GeometryElement expr_23 = element.get_Geometry(Geometry_Options);
 			Arc arc = expr_23.ToArray()[1] as Arc;
 			Curve arg_49_0 = expr_23.ToArray()[3] as Arc;
 			XYZ[] array = arc.Tessellate().ToArray<XYZ>();
@@ -769,12 +791,12 @@ namespace ExportDAE
 			for (int i = 0; i < array.Length; i++)
 			{
 				exportedGeometry.Points.Add(array[i]);
-				exportedGeometry.Uvs.Add(new UV((double)(1f - (float)i * (1f / (float)(array.Length - 1))), 1.0));
+				exportedGeometry.Uvs.Add(new UV(1f - i * (1f / (array.Length - 1)), 1.0));
 			}
 			for (int j = 0; j < array2.Length; j++)
 			{
 				exportedGeometry.Points.Add(array2[j]);
-				exportedGeometry.Uvs.Add(new UV((double)((float)j * (1f / (float)(array.Length - 1))), 0.0));
+				exportedGeometry.Uvs.Add(new UV(j * (1f / (array.Length - 1)), 0.0));
 			}
 			exportedGeometry.Indices = new List<int>((array.Length - 1) * 6);
 			for (int k = 0; k < array.Length - 1; k++)
@@ -789,23 +811,23 @@ namespace ExportDAE
 			exportedGeometry.CalculateNormals(false);
 			exportedGeometry.MakeDoubleSided();
 			int num = this.currentDecalMaterialId;
-			this.currentDecalMaterialId = num + 1;
+			currentDecalMaterialId = num + 1;
 			ElementId elementId = new ElementId(num);
-			this.decalMaterialIdToDecal.Add(elementId, element);
-			Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(this.documentStack.Peek(), elementId);
-			this.ChangeCurrentMaterial(tuple);
-			this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
+			decalMaterialIdToDecal.Add(elementId, element);
+			Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(documentStack.Peek(), elementId);
+			ChangeCurrentMaterial(tuple);
+			documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 		}
 
 		/// <summary>
-		/// 导出扁平的贴花（DecalFlat）adj. (flat) 光滑均匀的；（陆地）平坦的；（水面）平静的；无坡度的；扁的；
+		/// 导出扁平的贴花或者叫纹理（DecalFlat）adj. (flat) 光滑均匀的；（陆地）平坦的；（水面）平静的；无坡度的；扁的；
 		/// </summary>
 		/// <param name="element"></param>
 		private void ExportDecalFlat(Element element)
 		{
 			ModelGeometry exportedGeometry = new ModelGeometry();
 			exportedGeometry.Transform = transformationStack.Peek();
-			GeometryElement arg_2F_0 = element.get_Geometry(this.Geometry_Options);
+			GeometryElement arg_2F_0 = element.get_Geometry(Geometry_Options);
 			exportedGeometry.Points = new List<XYZ>(4);
 			using (IEnumerator<GeometryObject> enumerator = arg_2F_0.GetEnumerator())
 			{
@@ -841,12 +863,12 @@ namespace ExportDAE
 			exportedGeometry.CalculateNormals(false);
 			exportedGeometry.MakeDoubleSided();
 			int num = this.currentDecalMaterialId;
-			this.currentDecalMaterialId = num + 1;
+			currentDecalMaterialId = num + 1;
 			ElementId elementId = new ElementId(num);
-			this.decalMaterialIdToDecal.Add(elementId, element);
-			Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(this.documentStack.Peek(), elementId);
-			this.ChangeCurrentMaterial(tuple);
-			this.documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
+			decalMaterialIdToDecal.Add(elementId, element);
+			Tuple<Document, ElementId> tuple = new Tuple<Document, ElementId>(documentStack.Peek(), elementId);
+			ChangeCurrentMaterial(tuple);
+			documentAndMaterialIdToGeometries[tuple].Add(exportedGeometry);
 		}
 		#endregion
 
