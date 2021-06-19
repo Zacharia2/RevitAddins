@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>Revit To Lumion Bridge</Name>
+    <Assembly>RevitExporter.dll</Assembly>
+    <AddInId>968c26fd-c5d2-49d0-af10-5106ff036cfa</AddInId>
+    <FullClassName>RevitExporter.App</FullClassName>
+    <VendorId>Act3</VendorId>
+    <VendorDescription>Lumion3D, http://Lumion3D.com</VendorDescription>
+  </AddIn>
+</RevitAddIns>
